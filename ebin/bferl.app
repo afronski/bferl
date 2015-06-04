@@ -1,5 +1,5 @@
 { application, bferl,
- [ { description, "Brainfuck implementation in Erlang - Interpreter, Compiler and JIT." },
+ [ { description, "Brainfuck/Brainfork implementation in Erlang - Interpreter, Compiler and JIT." },
    { vsn, "1.0" },
    { modules, [] },
    { registered, [] },
