@@ -18,3 +18,15 @@
 - [ ] Updating documentation.
 - [ ] Parser as a `gen_server`.
 - [ ] Interpreter *VM* as a `gen_server`.
+
+## Phase 3
+
+- [ ] Adding support for `Y` (*Brainfork*).
+- [ ] Compiling source to the *BEAM* representation.
+  - [ ] Running it as a standard module with fixed structure and *exports*.
+
+## Phase 4
+
+- [ ] *Heuristic* optimizations (e.g. rolling up incrementations / decrementations).
+- [ ] *Hot Code* detection.
+  - [ ] Basic optimizations based on pattern and usage.
