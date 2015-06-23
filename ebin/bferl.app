@@ -5,6 +5,6 @@
    { registered, [] },
    { applications, [ kernel, stdlib, sasl ] },
    { env, [] },
-   { mod, { bferl, [] } }
+   { mod, { bferl_app, [] } }
  ]
 }.
