@@ -22,6 +22,7 @@
 ## Phase 3
 
 - [ ] Adding support for `Y` (*Brainfork*).
+  - [ ] Fork uses new process with cloned *VM* state. 
 - [ ] Compiling source to the *BEAM* representation.
   - [ ] Running it as a standard module with fixed structure and *exports*.
 
