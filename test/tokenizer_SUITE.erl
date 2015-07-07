@@ -4,7 +4,6 @@
 -include_lib("eunit/include/eunit.hrl").
 
 -export([ all/0 ]).
--export([  ]).
+-export([]).
 
-all() ->
-    [].
+all() -> [].
