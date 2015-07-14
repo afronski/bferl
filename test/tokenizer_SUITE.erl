@@ -3,7 +3,24 @@
 -include_lib("common_test/include/ct.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
--export([ all/0 ]).
--export([]).
+-include("../include/tokens_definitions.hrl").
 
-all() -> [].
+-export([ all/0 ]).
+-export([ tokenize_input/1, clean_input/1,
+          accepting_tokens_from_other_sets/1
+        ]).
+
+all() -> [ tokenize_input, clean_input,
+           accepting_tokens_from_other_sets ].
+
+tokenize_input(_Context) ->
+    ?assertEqual([".", ","], bferl_tokenizer:from_string(".,")),
+    ?assertEqual(["+", "-"], bferl_tokenizer:from_string("+-")),
+    ?assertEqual(["[", "]"], bferl_tokenizer:from_string("[]")),
+    ?assertEqual(["<", ">"], bferl_tokenizer:from_string("<>")).
+
+clean_input(_Context) ->
+    ?assertEqual([".", ",", "[", "]", "<", ">", "+", "-"], bferl_tokenizer:from_string("\tABCD .,[]<>+- ABCD\t")).
+
+accepting_tokens_from_other_sets(_Context) ->
+    ?assertEqual([".", ",", "[", "]", "<", ">", "+", "-", "Y"], bferl_tokenizer:from_string("\tABCD .,[]<>+-Y ABCD\t", ?BRAINFORK)).
