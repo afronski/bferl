@@ -1,8 +1,7 @@
 -module(bferl_tokenizer).
 -export([ from_string/1, from_string/2 ]).
 
--define(BRAINFUCK, sets:from_list([".", ",", "[", "]", "<", ">", "+", "-"])).
--define(BRAINFORK, sets:add_element("Y", ?BRAINFUCK)).
+-include("../include/tokens_definitions.hrl").
 
 from_string(Input) ->
     from_string(Input, ?BRAINFUCK).
