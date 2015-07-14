@@ -3,9 +3,9 @@
 ## Phase 1
 
 - [x] Bootstrapped basic structure and `rebar3` configuration.
-- [ ] Tokenizer and Parser.
-  - [ ] Removing comments.
-  - [ ] Handling set of keywords (e.g. enhancement for *Brainfork*)
+- [x] Tokenizer and Parser.
+  - [x] Removing comments.
+  - [x] Handling set of keywords (e.g. enhancement for *Brainfork*)
 - [ ] Basic structure for interpreter.
   - [ ] Records vs. Maps?
 - [x] Setting up `common_test` framework.
