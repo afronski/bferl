@@ -1,0 +1,3 @@
+Brainfork has a special meaning applied to big letter 'y' when is encountered the current thread forks with the current cell being zeroed in the parent thread and the pointer being moved one to the right and that cell set to 1 in the child
+
+Y++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.
