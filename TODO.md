@@ -6,12 +6,12 @@
 - [x] Tokenizer and Parser.
   - [x] Removing comments.
   - [x] Handling set of keywords (e.g. enhancement for *Brainfork*)
+- [x] Setting up `common_test` framework.
+  - [ ] Basic intergration tests.
 - [ ] Basic structure for interpreter.
   - [ ] Records vs. Maps?
-- [x] Setting up `common_test` framework.
-  - [ ] Basic intergration tests. 
 - [ ] Setting up *QuickCheck-like* tool e.g. *PropER*.
-  - [ ] Basic tests for the parser.
+  - [ ] Basic tests for the parser / tokenizer.
   
 ## Phase 2 
 
