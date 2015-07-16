@@ -1,6 +1,6 @@
 # TODO
 
-## Phase 1
+## Phase 1 - Foundation and Interpreter
 
 - [x] Bootstrapped basic structure and `rebar3` configuration.
 - [x] Tokenizer and Parser.
@@ -15,20 +15,21 @@
 - [ ] Setting up *QuickCheck-like* tool e.g. *PropER*.
   - [ ] Basic tests for the parser / tokenizer.
   
-## Phase 2 
+## Phase 2 - *OTP*
 
 - [ ] Updating documentation.
-- [ ] Parser as a `gen_server`.
-- [ ] Interpreter *VM* as a `gen_server`.
+- [ ] Interpreter as a `gen_server`.
+- [ ] *VM* as a `gen_server`.
+- [ ] Prepare it as an *OTP* application.
 
-## Phase 3
+## Phase 3 - *Brainfork* and Compiler
 
 - [ ] Adding support for `Y` (*Brainfork*).
   - [ ] Fork uses new process with cloned *VM* state. 
 - [ ] Compiling source to the *BEAM* representation.
-  - [ ] Running it as a standard module with fixed structure and *exports*.
+  - [ ] Compile it to the single function inside module with *fixed* structure.
 
-## Phase 4
+## Phase 4 - Virtual Machine
 
 - [ ] *Heuristic* optimizations (e.g. rolling up incrementations / decrementations).
 - [ ] *Hot Code* detection.
