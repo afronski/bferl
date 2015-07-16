@@ -6,10 +6,12 @@
 - [x] Tokenizer and Parser.
   - [x] Removing comments.
   - [x] Handling set of keywords (e.g. enhancement for *Brainfork*)
-- [x] Setting up `common_test` framework.
-  - [ ] Basic intergration tests.
 - [x] Basic structure for interpreter.
   - [x] Records vs. Maps?
+  - [ ] Implement all *Brainfuck* opcodes.
+- [x] Setting up `common_test` framework.
+  - [x] Test-Driven Development.
+  - [ ] Basic intergration tests.
 - [ ] Setting up *QuickCheck-like* tool e.g. *PropER*.
   - [ ] Basic tests for the parser / tokenizer.
   
