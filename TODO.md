@@ -8,8 +8,8 @@
   - [x] Handling set of keywords (e.g. enhancement for *Brainfork*)
 - [x] Setting up `common_test` framework.
   - [ ] Basic intergration tests.
-- [ ] Basic structure for interpreter.
-  - [ ] Records vs. Maps?
+- [x] Basic structure for interpreter.
+  - [x] Records vs. Maps?
 - [ ] Setting up *QuickCheck-like* tool e.g. *PropER*.
   - [ ] Basic tests for the parser / tokenizer.
   

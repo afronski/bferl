@@ -1,8 +1,9 @@
 -module(bferl_tokenizer).
--export([ from_string/1, from_string/2,
-          from_file/1, from_file/2 ]).
 
 -include("../include/tokens_definitions.hrl").
+
+-export([ from_string/1, from_string/2,
+          from_file/1, from_file/2 ]).
 
 from_string(Input) ->
     from_string(Input, ?BRAINFUCK).
