@@ -46,4 +46,29 @@ run(State) ->
 do("+", InputState) ->
     CellIndex = InputState#interpreter_state.memory_pointer,
     Cell = get_memory_cell(CellIndex, InputState),
-    InputState#interpreter_state{memory = array:set(CellIndex, Cell + 1, InputState#interpreter_state.memory)}.
+    InputState#interpreter_state{memory = array:set(CellIndex, Cell + 1, InputState#interpreter_state.memory)};
+
+do("-", InputState) ->
+    CellIndex = InputState#interpreter_state.memory_pointer,
+    Cell = get_memory_cell(CellIndex, InputState),
+    InputState#interpreter_state{memory = array:set(CellIndex, Cell - 1, InputState#interpreter_state.memory)};
+
+do("<", InputState) ->
+    CellIndex = InputState#interpreter_state.memory_pointer,
+    InputState#interpreter_state{memory_pointer = max(CellIndex - 1, 0)};
+
+do(">", InputState) ->
+    CellIndex = InputState#interpreter_state.memory_pointer,
+    InputState#interpreter_state{memory_pointer = min(CellIndex + 1, ?MEMORY_SIZE)};
+
+do("[", InputState) ->
+    InputState;
+
+do("]", InputState) ->
+    InputState;
+
+do(",", InputState) ->
+    InputState;
+
+do(".", InputState) ->
+    InputState.
