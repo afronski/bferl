@@ -8,7 +8,7 @@
   - [x] Handling set of keywords (e.g. enhancement for *Brainfork*)
 - [x] Basic structure for interpreter.
   - [x] Records vs. Maps?
-  - [ ] Implement all *Brainfuck* opcodes.
+  - [x] Implement all *Brainfuck* opcodes.
 - [x] Setting up `common_test` framework.
   - [x] Test-Driven Development.
   - [ ] Basic intergration tests.
