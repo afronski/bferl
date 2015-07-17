@@ -9,7 +9,7 @@
 
 -export([ all/0 ]).
 -export([ empty_state_should_have_fixed_memory_size/1,
-          other_parameters_should_be_set_to_undefined/1,
+          other_parameters_should_be_set_to_proper_value/1,
           after_registering_io_process_state_should_update_that_field/1,
           pointers_should_be_set_at_the_beginning_after_init/1,
           after_loading_program_it_should_be_available_in_state/1,
@@ -19,7 +19,7 @@
           running_partially_stepped_program_should_finish_program_execution/1 ]).
 
 all() -> [ empty_state_should_have_fixed_memory_size,
-           other_parameters_should_be_set_to_undefined,
+           other_parameters_should_be_set_to_proper_value,
            after_registering_io_process_state_should_update_that_field,
            pointers_should_be_set_at_the_beginning_after_init,
            after_loading_program_it_should_be_available_in_state,
@@ -32,8 +32,10 @@ empty_state_should_have_fixed_memory_size(_Context) ->
     State = bferl_interpreter:init(),
     ?assertEqual(?MEMORY_SIZE, array:size(State#interpreter.memory)).
 
-other_parameters_should_be_set_to_undefined(_Context) ->
+other_parameters_should_be_set_to_proper_value(_Context) ->
     State = bferl_interpreter:init(),
+
+    ?assertEqual([], State#interpreter.stack),
 
     ?assertEqual(undefined, State#interpreter.instructions),
     ?assertEqual(undefined, State#interpreter.io).
