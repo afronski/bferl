@@ -25,23 +25,27 @@ get_memory_cell(CellIndex, State) ->
 step(State) when State#interpreter.instructions =:= undefined ->
     no_program_loaded;
 
-step(State) when State#interpreter.instructions_pointer < 0 ->
+step(State) when State#interpreter.instructions_pointer =< 0 ->
     end_of_program;
 
-step(State) when State#interpreter.instructions_pointer >= length(State#interpreter.instructions) ->
+step(State) when State#interpreter.instructions_pointer > length(State#interpreter.instructions) ->
     end_of_program;
 
 step(State) ->
     IP = State#interpreter.instructions_pointer,
-    Instruction = lists:nth(IP + 1, State#interpreter.instructions),
+    Instruction = lists:nth(IP, State#interpreter.instructions),
+
     TemporaryState = do(Instruction, State),
-    TemporaryState#interpreter{instructions_pointer = IP + 1}.
+
+    IC = TemporaryState#interpreter.instructions_counter,
+    TemporaryState#interpreter{instructions_counter = IC + 1}.
 
 run(State) ->
-    IP = State#interpreter.instructions_pointer,
-    Program = State#interpreter.instructions,
-    SubProgram = lists:sublist(Program, IP + 1, length(Program)),
-    lists:foldl(fun (_, PartialState) -> step(PartialState) end, State, SubProgram).
+    NewState = step(State),
+    case NewState of
+        end_of_program -> State;
+        _              -> run(NewState)
+    end.
 
 %% Opcodes
 %% --
@@ -50,31 +54,97 @@ run(State) ->
 do("+", InputState) ->
     CellIndex = InputState#interpreter.memory_pointer,
     Cell = get_memory_cell(CellIndex, InputState),
-    InputState#interpreter{memory = array:set(CellIndex, Cell + 1, InputState#interpreter.memory)};
+
+    IP = InputState#interpreter.instructions_pointer,
+
+    InputState#interpreter{memory = array:set(CellIndex, Cell + 1, InputState#interpreter.memory),
+                           instructions_pointer = IP + 1};
 
 do("-", InputState) ->
     CellIndex = InputState#interpreter.memory_pointer,
     Cell = get_memory_cell(CellIndex, InputState),
-    InputState#interpreter{memory = array:set(CellIndex, Cell - 1, InputState#interpreter.memory)};
+
+    IP = InputState#interpreter.instructions_pointer,
+
+    InputState#interpreter{memory = array:set(CellIndex, Cell - 1, InputState#interpreter.memory),
+                           instructions_pointer = IP + 1};
 
 do("<", InputState) ->
     CellIndex = InputState#interpreter.memory_pointer,
-    InputState#interpreter{memory_pointer = max(CellIndex - 1, 0)};
+    IP = InputState#interpreter.instructions_pointer,
+
+    InputState#interpreter{memory_pointer = max(CellIndex - 1, 0),
+                           instructions_pointer = IP + 1};
 
 do(">", InputState) ->
     CellIndex = InputState#interpreter.memory_pointer,
-    InputState#interpreter{memory_pointer = min(CellIndex + 1, ?MEMORY_SIZE)};
+    IP = InputState#interpreter.instructions_pointer,
+
+    InputState#interpreter{memory_pointer = min(CellIndex + 1, ?MEMORY_SIZE),
+                           instructions_pointer = IP + 1};
 
 do("[", InputState) ->
-    InputState;
+    IP = InputState#interpreter.instructions_pointer,
 
-do("]", InputState) ->
-    InputState;
+    CellIndex = InputState#interpreter.memory_pointer,
+    Result = case get_memory_cell(CellIndex, InputState) of
+        0 ->
+            NewStack = case InputState#interpreter.stack of
+                []         -> [];
+                [_ | Tail] -> Tail
+            end,
+
+            NewIP = case find_first_closing_bracket(IP, InputState#interpreter.instructions) of
+                0 -> InputState#interpreter.instructions_pointer + 1;
+                Position -> Position + IP + 1
+            end,
+
+            InputState#interpreter{stack = NewStack, instructions_pointer = NewIP};
+
+        _ ->
+            NewStack = case InputState#interpreter.stack of
+                [H | _] = OldStack when H =:= IP -> OldStack;
+                _                                -> [IP | InputState#interpreter.stack]
+            end,
+
+            InputState#interpreter{stack = NewStack, instructions_pointer = IP + 1}
+    end,
+
+    Result;
+
+do("]", InputState) when length(InputState#interpreter.stack) =< 0 -> InputState;
+do("]", InputState) when length(InputState#interpreter.stack)  > 0 ->
+    [NewIP | _] = InputState#interpreter.stack,
+    InputState#interpreter{instructions_pointer = NewIP};
 
 do(".", InputState) ->
-    %% TODO: How to handle output?
-    InputState;
+    CellIndex = InputState#interpreter.memory_pointer,
+    Value = get_memory_cell(CellIndex, InputState),
+
+    IoProcess = InputState#interpreter.io,
+    IoProcess ! {put_char, Value},
+
+    IP = InputState#interpreter.instructions_pointer,
+
+    InputState#interpreter{instructions_pointer = IP + 1};
 
 do(",", InputState) ->
-    %% TODO: How to handle input?
-    InputState.
+    CellIndex = InputState#interpreter.memory_pointer,
+    IoProcess = InputState#interpreter.io,
+
+    IoProcess ! {get_char, self()},
+    Value = receive
+        {received_char, Char} -> Char
+    end,
+
+    IP = InputState#interpreter.instructions_pointer,
+
+    InputState#interpreter{memory = array:set(CellIndex, Value, InputState#interpreter.memory),
+                           instructions_pointer = IP + 1}.
+
+%% Opcodes Helper.
+
+find_first_closing_bracket(IP, Program) when is_integer(IP), is_list(Program) ->
+    SubProgram = lists:sublist(Program, IP + 1, length(Program)),
+    Code = string:join(SubProgram, ""),
+    string:chr(Code, $]).

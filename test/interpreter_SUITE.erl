@@ -49,7 +49,9 @@ after_registering_io_process_state_should_update_that_field(_Context) ->
 pointers_should_be_set_at_the_beginning_after_init(_Context) ->
     State = bferl_interpreter:init(),
 
-    ?assertEqual(0, State#interpreter.instructions_pointer),
+    ?assertEqual(0, State#interpreter.instructions_counter),
+
+    ?assertEqual(1, State#interpreter.instructions_pointer),
     ?assertEqual(0, State#interpreter.memory_pointer).
 
 after_loading_program_it_should_be_available_in_state(_Context) ->
@@ -63,14 +65,18 @@ you_should_be_able_run_program(_Context) ->
     State = bferl_interpreter:init(["+", "+", "+"]),
     Output = bferl_interpreter:run(State),
 
-    ?assertEqual(3, Output#interpreter.instructions_pointer),
+    ?assertEqual(length(Output#interpreter.instructions) + 1, Output#interpreter.instructions_pointer),
+    ?assertEqual(length(Output#interpreter.instructions), Output#interpreter.instructions_counter),
+
     ?assertEqual(3, bferl_interpreter:get_memory_cell(0, Output)).
 
 you_should_be_able_step_through_program(_Context) ->
     State = bferl_interpreter:init(["+", "+", "+"]),
     OutputAfterFirstStep = bferl_interpreter:step(State),
 
-    ?assertEqual(1, OutputAfterFirstStep#interpreter.instructions_pointer),
+    ?assertEqual(2, OutputAfterFirstStep#interpreter.instructions_pointer),
+    ?assertEqual(1, OutputAfterFirstStep#interpreter.instructions_counter),
+
     ?assertEqual(1, bferl_interpreter:get_memory_cell(0, OutputAfterFirstStep)).
 
 stepping_out_of_the_program_should_not_be_a_problem(_Context) ->
@@ -80,6 +86,9 @@ stepping_out_of_the_program_should_not_be_a_problem(_Context) ->
     State = bferl_interpreter:init([]),
     end_of_program = bferl_interpreter:step(State),
 
+    StateWithZeroedPointer = State#interpreter{instructions_pointer = 0},
+    end_of_program = bferl_interpreter:step(StateWithZeroedPointer),
+
     StateWithNegativeInstructionsPointer = State#interpreter{instructions_pointer = -1},
     end_of_program = bferl_interpreter:step(StateWithNegativeInstructionsPointer).
 
@@ -87,8 +96,9 @@ running_partially_stepped_program_should_finish_program_execution(_Context) ->
     State = bferl_interpreter:init(["+", "+", "+"]),
 
     StateAfterFirstStep = bferl_interpreter:step(State),
-    ?assertEqual(1, StateAfterFirstStep#interpreter.instructions_pointer),
+    ?assertEqual(2, StateAfterFirstStep#interpreter.instructions_pointer),
 
     Output = bferl_interpreter:run(StateAfterFirstStep),
 
-    ?assertEqual(3, Output#interpreter.instructions_pointer).
+    ?assertEqual(length(Output#interpreter.instructions) + 1, Output#interpreter.instructions_pointer),
+    ?assertEqual(length(Output#interpreter.instructions), Output#interpreter.instructions_counter).
