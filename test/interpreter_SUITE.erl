@@ -9,6 +9,8 @@
 
 -export([ all/0 ]).
 -export([ empty_state_should_have_fixed_memory_size/1,
+          other_parameters_should_be_set_to_undefined/1,
+          after_registering_io_process_state_should_update_that_field/1,
           pointers_should_be_set_at_the_beginning_after_init/1,
           after_loading_program_it_should_be_available_in_state/1,
           you_should_be_able_run_program/1,
@@ -17,6 +19,8 @@
           running_partially_stepped_program_should_finish_program_execution/1 ]).
 
 all() -> [ empty_state_should_have_fixed_memory_size,
+           other_parameters_should_be_set_to_undefined,
+           after_registering_io_process_state_should_update_that_field,
            pointers_should_be_set_at_the_beginning_after_init,
            after_loading_program_it_should_be_available_in_state,
            you_should_be_able_run_program,
@@ -28,10 +32,20 @@ empty_state_should_have_fixed_memory_size(_Context) ->
     State = bferl_interpreter:init(),
     ?assertEqual(?MEMORY_SIZE, array:size(State#interpreter.memory)).
 
-pointers_should_be_set_at_the_beginning_after_init(_Context) ->
+other_parameters_should_be_set_to_undefined(_Context) ->
     State = bferl_interpreter:init(),
 
     ?assertEqual(undefined, State#interpreter.instructions),
+    ?assertEqual(undefined, State#interpreter.io).
+
+after_registering_io_process_state_should_update_that_field(_Context) ->
+    State = bferl_interpreter:init(),
+    StateWithIO = bferl_interpreter:register_io(self(), State),
+
+    ?assertEqual(self(), StateWithIO#interpreter.io).
+
+pointers_should_be_set_at_the_beginning_after_init(_Context) ->
+    State = bferl_interpreter:init(),
 
     ?assertEqual(0, State#interpreter.instructions_pointer),
     ?assertEqual(0, State#interpreter.memory_pointer).
@@ -74,5 +88,5 @@ running_partially_stepped_program_should_finish_program_execution(_Context) ->
     ?assertEqual(1, StateAfterFirstStep#interpreter.instructions_pointer),
 
     Output = bferl_interpreter:run(StateAfterFirstStep),
-io:format("~p~n", [Output]),
+
     ?assertEqual(3, Output#interpreter.instructions_pointer).

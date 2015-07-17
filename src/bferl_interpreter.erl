@@ -3,7 +3,8 @@
 -include("../include/interpreter_definitions.hrl").
 
 -export([ init/0, init/1,
-          load/2, get_memory_cell/2,
+          load/2, register_io/2,
+          get_memory_cell/2,
           step/1, run/1 ]).
 
 init() ->
@@ -14,6 +15,9 @@ init(Program) ->
 
 load(Program, State) when is_list(Program) ->
     State#interpreter{instructions = Program}.
+
+register_io(IoProcess, State) when is_pid(IoProcess) ->
+    State#interpreter{io = IoProcess}.
 
 get_memory_cell(CellIndex, State) ->
     array:get(CellIndex, State#interpreter.memory).
