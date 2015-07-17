@@ -7,35 +7,35 @@
           step/1, run/1 ]).
 
 init() ->
-    #interpreter_state{}.
+    #interpreter{}.
 
 init(Program) ->
-    load(Program, #interpreter_state{}).
+    load(Program, #interpreter{}).
 
 load(Program, State) when is_list(Program) ->
-    State#interpreter_state{instructions = Program}.
+    State#interpreter{instructions = Program}.
 
 get_memory_cell(CellIndex, State) ->
-    array:get(CellIndex, State#interpreter_state.memory).
+    array:get(CellIndex, State#interpreter.memory).
 
-step(State) when State#interpreter_state.instructions =:= undefined ->
+step(State) when State#interpreter.instructions =:= undefined ->
     no_program_loaded;
 
-step(State) when State#interpreter_state.instructions_pointer < 0 ->
+step(State) when State#interpreter.instructions_pointer < 0 ->
     end_of_program;
 
-step(State) when State#interpreter_state.instructions_pointer >= length(State#interpreter_state.instructions) ->
+step(State) when State#interpreter.instructions_pointer >= length(State#interpreter.instructions) ->
     end_of_program;
 
 step(State) ->
-    IP = State#interpreter_state.instructions_pointer,
-    Instruction = lists:nth(IP + 1, State#interpreter_state.instructions),
+    IP = State#interpreter.instructions_pointer,
+    Instruction = lists:nth(IP + 1, State#interpreter.instructions),
     TemporaryState = do(Instruction, State),
-    TemporaryState#interpreter_state{instructions_pointer = IP + 1}.
+    TemporaryState#interpreter{instructions_pointer = IP + 1}.
 
 run(State) ->
-    IP = State#interpreter_state.instructions_pointer,
-    Program = State#interpreter_state.instructions,
+    IP = State#interpreter.instructions_pointer,
+    Program = State#interpreter.instructions,
     SubProgram = lists:sublist(Program, IP + 1, length(Program)),
     lists:foldl(fun (_, PartialState) -> step(PartialState) end, State, SubProgram).
 
@@ -44,22 +44,22 @@ run(State) ->
 %% Brainfuck
 
 do("+", InputState) ->
-    CellIndex = InputState#interpreter_state.memory_pointer,
+    CellIndex = InputState#interpreter.memory_pointer,
     Cell = get_memory_cell(CellIndex, InputState),
-    InputState#interpreter_state{memory = array:set(CellIndex, Cell + 1, InputState#interpreter_state.memory)};
+    InputState#interpreter{memory = array:set(CellIndex, Cell + 1, InputState#interpreter.memory)};
 
 do("-", InputState) ->
-    CellIndex = InputState#interpreter_state.memory_pointer,
+    CellIndex = InputState#interpreter.memory_pointer,
     Cell = get_memory_cell(CellIndex, InputState),
-    InputState#interpreter_state{memory = array:set(CellIndex, Cell - 1, InputState#interpreter_state.memory)};
+    InputState#interpreter{memory = array:set(CellIndex, Cell - 1, InputState#interpreter.memory)};
 
 do("<", InputState) ->
-    CellIndex = InputState#interpreter_state.memory_pointer,
-    InputState#interpreter_state{memory_pointer = max(CellIndex - 1, 0)};
+    CellIndex = InputState#interpreter.memory_pointer,
+    InputState#interpreter{memory_pointer = max(CellIndex - 1, 0)};
 
 do(">", InputState) ->
-    CellIndex = InputState#interpreter_state.memory_pointer,
-    InputState#interpreter_state{memory_pointer = min(CellIndex + 1, ?MEMORY_SIZE)};
+    CellIndex = InputState#interpreter.memory_pointer,
+    InputState#interpreter{memory_pointer = min(CellIndex + 1, ?MEMORY_SIZE)};
 
 do("[", InputState) ->
     InputState;
@@ -67,8 +67,10 @@ do("[", InputState) ->
 do("]", InputState) ->
     InputState;
 
-do(",", InputState) ->
+do(".", InputState) ->
+    %% TODO: How to handle output?
     InputState;
 
-do(".", InputState) ->
+do(",", InputState) ->
+    %% TODO: How to handle input?
     InputState.
