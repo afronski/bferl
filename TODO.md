@@ -12,8 +12,8 @@
 - [x] Setting up `common_test` framework.
   - [x] Test-Driven Development.
   - [x] Basic intergration tests.
-- [ ] Setting up *QuickCheck-like* tool e.g. *PropER*.
-  - [ ] Basic tests for the parser / tokenizer.
+- [x] Setting up *QuickCheck-like* tool e.g. *PropER*.
+  - [x] Basic tests for the interpreter / tokenizer.
   
 ## Phase 2 - *OTP*
 
