@@ -13,15 +13,19 @@
   - [x] Test-Driven Development.
   - [x] Basic intergration tests.
 - [x] Setting up *QuickCheck-like* tool e.g. *PropER*.
-  - [x] Basic tests for the interpreter / tokenizer.
+  - [x] Basic tests for the interpreter.
   
 ## Phase 2 - *OTP*
 
-- [ ] Updating documentation.
-- [ ] Interpreter as a `gen_server`.
-- [ ] *VM* as a `gen_server`.
-- [ ] Prepare it as an *OTP* application.
-- [ ] Running `dialyzer`. 
+- [ ] Add property based tests for:
+  - [ ] Tokenizer.
+  - [ ] I/O operations.
+- [ ] Prepare it as an *OTP* system.
+  - [ ] Interpreter as a `gen_server`.
+  - [ ] *VM* as a `gen_server`.
+  - [ ] Proper *OTP* application.
+- [ ] Setting up `dialyzer` and preparing *type specifications*. 
+- [ ] Updating documentation (and *screenshots*).
 
 ## Phase 3 - *Brainfork* and Compiler
 
