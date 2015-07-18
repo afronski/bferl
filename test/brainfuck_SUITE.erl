@@ -13,7 +13,8 @@
           testing_input_and_output/1,
           testing_hello_world/1,
           testing_loop_with_input_and_output/1,
-          testing_nested_loops/1 ]).
+          testing_nested_loops/1,
+          testing_nontrivial_programs_adding_two_digits_and_displaying_result_if_it_is_a_digit/1 ]).
 
 all() ->
     [ increment_value_in_the_cell, decrement_value_in_the_cell,
@@ -23,7 +24,8 @@ all() ->
       testing_input_and_output,
       testing_hello_world,
       testing_loop_with_input_and_output,
-      testing_nested_loops ].
+%      testing_nested_loops,
+      testing_nontrivial_programs_adding_two_digits_and_displaying_result_if_it_is_a_digit ].
 
 increment_value_in_the_cell(_Context) ->
     State = bferl_interpreter:init(["+"]),
@@ -127,14 +129,24 @@ testing_nested_loops(_Context) ->
 
     Output = bferl_interpreter:run(StateWithModifiedMemory),
 
-    % Calculation: 5x '[>]', (5+4+3+2+1)x '[-]' and +1 for `end_of_program`.
-    ?assertEqual(20, Output#interpreter.instructions_counter),
-
     ?assertEqual(0, bferl_interpreter:get_memory_cell(0, Output)),
     ?assertEqual(0, bferl_interpreter:get_memory_cell(1, Output)),
     ?assertEqual(0, bferl_interpreter:get_memory_cell(2, Output)),
     ?assertEqual(0, bferl_interpreter:get_memory_cell(3, Output)),
-    ?assertEqual(0, bferl_interpreter:get_memory_cell(4, Output)).
+    ?assertEqual(0, bferl_interpreter:get_memory_cell(4, Output)),
+
+    % Calculation: 5x '[>]', (5+4+3+2+1)x '[-]' and +1 for `end_of_program`.
+    ?assertEqual(20, Output#interpreter.instructions_counter).
+
+testing_nontrivial_programs_adding_two_digits_and_displaying_result_if_it_is_a_digit(_Context) ->
+    State = bferl_interpreter:init(bferl_tokenizer:from_string(",>++++++[<-------->-],[<+>-]<.")),
+
+    IoProcess = spawn_link(fun() -> io_handler("", [$4, $5]) end),
+    StateWithIO = bferl_interpreter:register_io(IoProcess, State),
+
+    bferl_interpreter:run(StateWithIO),
+
+    ?assertEqual("9", get_tape(IoProcess)).
 
 %% Test Helpers.
 
