@@ -94,7 +94,7 @@ do("[", InputState) ->
                 [_ | Tail] -> Tail
             end,
 
-            NewIP = case find_first_closing_bracket(IP, InputState#interpreter.instructions) of
+            NewIP = case find_corresponding_closing_bracket(IP, InputState#interpreter.instructions) of
                 0 -> InputState#interpreter.instructions_pointer + 1;
                 Position -> Position + IP + 1
             end,
@@ -144,7 +144,14 @@ do(",", InputState) ->
 
 %% Opcodes Helper.
 
-find_first_closing_bracket(IP, Program) when is_integer(IP), is_list(Program) ->
+find_corresponding_closing_bracket(IP, Program) when is_integer(IP), is_list(Program) ->
     SubProgram = lists:sublist(Program, IP + 1, length(Program)),
-    Code = string:join(SubProgram, ""),
-    string:chr(Code, $]).
+    SubProgramWithIndexes = lists:zip(SubProgram, lists:seq(1, length(SubProgram))),
+
+    {NewIP, 0} = lists:foldl(fun handle_brackets/2, {-1, 0}, SubProgramWithIndexes),
+    NewIP.
+
+handle_brackets({"]", Position}, {OldPosition, 0}) when OldPosition =:= -1 -> {Position, 0};
+handle_brackets({"]", _}, {Position, N}) when Position =:= -1 -> {Position, N - 1};
+handle_brackets({"[", _}, {Position, N}) when Position =:= -1 -> {Position, N + 1};
+handle_brackets(_, Result) -> Result.
