@@ -1,11 +1,11 @@
--module(interpreter_properties).
+-module(brainfuck_program_model).
 
 -include_lib("proper/include/proper.hrl").
 
--include("../include/interpreter_definitions.hrl").
+-include("../../include/interpreter_definitions.hrl").
 
 -export([ prop_programs_without_loops_should_have_IC_and_IP_equal_to_program_length/0,
-          prop_programs_with_proper_loops_should_execute_properly/0 ]).
+          prop_programs_with_proper_loops_should_finish_in_finite_time/0 ]).
 
 %% Types of tokens and programs.
 
@@ -36,7 +36,7 @@ prop_programs_without_loops_should_have_IC_and_IP_equal_to_program_length() ->
                 (Output#interpreter.instructions_pointer =:= length(Program) + 1)
             end).
 
-prop_programs_with_proper_loops_should_execute_properly() ->
+prop_programs_with_proper_loops_should_finish_in_finite_time() ->
     ?FORALL(Program, program_with_valid_loops(),
             begin
                 Input = bferl_interpreter:init(to_tokens(Program)),
