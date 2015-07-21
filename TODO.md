@@ -3,7 +3,7 @@
 ## Next phase - *OTP*
 
 - [ ] Add property based tests for:
-  - [ ] Tokenizer.
+  - [ ] Tokenizer
   - [ ] I/O operations.
 - [ ] Prepare it as an *OTP* system.
   - [ ] Interpreter as a `gen_server`.
