@@ -4,7 +4,7 @@
 
 - [ ] Add property based tests for:
   - [ ] Tokenizer
-  - [ ] I/O operations.
+  - [ ] I/O operations
 - [ ] Prepare it as an *OTP* system.
   - [ ] Interpreter as a `gen_server`.
   - [ ] *VM* as a `gen_server`.
