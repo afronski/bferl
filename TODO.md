@@ -24,3 +24,5 @@
 - [ ] *Heuristic* optimizations (e.g. rolling up incrementations / decrementations).
 - [ ] *Hot Code* detection.
   - [ ] Basic optimizations based on pattern and usage.
+- [ ] Visualizations - *API*, *introspection* (like http://privateeye.io).
+  - [ ] Graphic visualization in *d3.js*.
