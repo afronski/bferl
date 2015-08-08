@@ -3,8 +3,8 @@
 ## Next phase - *OTP*
 
 - [ ] Add property based tests for:
-  - [ ] Tokenizer.
-  - [ ] I/O operations.
+  - [ ] Tokenizer
+  - [ ] I/O operations
 - [ ] Prepare it as an *OTP* system.
   - [ ] Interpreter as a `gen_server`.
   - [ ] *VM* as a `gen_server`.
@@ -24,3 +24,5 @@
 - [ ] *Heuristic* optimizations (e.g. rolling up incrementations / decrementations).
 - [ ] *Hot Code* detection.
   - [ ] Basic optimizations based on pattern and usage.
+- [ ] Visualizations - *API*, *introspection*, *profiler* (like http://privateeye.io).
+  - [ ] Graphic visualization in *d3.js*.
