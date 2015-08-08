@@ -1,4 +1,4 @@
--module(bferl_main_sup).
+-module(bferl_tools_sup).
 -behaviour(supervisor).
 
 -export([ start_link/0 ]).
@@ -8,7 +8,7 @@ start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-    RestartStrategy = all_for_one,
+    RestartStrategy = one_for_one,
     MaxRestarts = 5,
     MaxSecondsBetweenRestarts = 30,
 
