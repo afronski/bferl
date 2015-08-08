@@ -1,17 +1,41 @@
--module(bferl_interpreter).
+-module(bferl_tools_interpreter).
+-behavior(gen_server).
 
 -include("../include/interpreter_definitions.hrl").
 
--export([ init/0, init/1,
-          load/2, register_io/2,
+-export([start_link/0]).
+
+-export([ init/1,
+          handle_call/3, handle_cast/2, handle_info/2,
+          terminate/2, code_change/3 ]).
+
+-export([ load/2, register_io/2,
           get_memory_cell/2,
           step/1, run/1 ]).
 
-init() ->
-    #interpreter{}.
+start_link() ->
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
-init(Program) ->
-    load(Program, #interpreter{}).
+init([]) ->
+    {ok, #interpreter{}}.
+
+handle_call(_Request, _From, State) ->
+    Reply = ok,
+    {reply, Reply, State}.
+
+handle_cast(_Msg, State) ->
+    {noreply, State}.
+
+handle_info(_Info, State) ->
+    {noreply, State}.
+
+terminate(_Reason, _State) ->
+    ok.
+
+code_change(_OldVsn, State, _Extra) ->
+    {ok, State}.
+
+%% TODO: Rewrite to OTP.
 
 load(Program, State) when is_list(Program) ->
     State#interpreter{instructions = Program}.
