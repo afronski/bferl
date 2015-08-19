@@ -2,15 +2,15 @@
   
 ## Next phase - *OTP*
 
-- [ ] Add property based tests for:
-  - [ ] Tokenizer
-  - [ ] I/O operations
 - [ ] Prepare it as an *OTP* system.
+  - [ ] Proper *OTP* application.
   - [ ] Interpreter as a `gen_server`.
   - [ ] *VM* as a `gen_server`.
-  - [ ] Proper *OTP* application.
-- [ ] Setting up `dialyzer` and preparing *type specifications*. 
 - [ ] Updating documentation (and *screenshots*).
+- [ ] Add property based tests for:
+  - [ ] Tokenizer
+  - [ ] I/O operations 
+- [ ] Setting up `dialyzer` and preparing *type specifications*.
 
 ## Next phase - *Brainfork* and Compiler
 
