@@ -1,1 +1,4 @@
-[].
+[{<<"recon">>,
+  {git,"https://github.com/ferd/recon.git",
+       {ref,"59589b71e7ad3b0f4f93571905f572db5fae7821"}},
+  0}].
