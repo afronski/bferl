@@ -1,3 +1,5 @@
+-define(BRAINFUCK_PROMPT, "bf> ").
+
 -define(MEMORY_SIZE, 30000).
 -define(EMPTY_MEMORY, array:new([ {size, ?MEMORY_SIZE}, {fixed, true}, {default, 0} ])).
 

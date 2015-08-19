@@ -1,26 +1,24 @@
 -module(bferl_io_tape).
 -behaviour(gen_event).
 
--export([ get_tape/0 ]).
-
 -export([ init/1,
           handle_event/2, handle_call/2, handle_info/2,
           terminate/2, code_change/3 ]).
 
-% TODO: Implement tape.
+init([ InputTape ]) ->
+    {ok, {InputTape, []}}.
 
-get_tape() ->
-    gen_event:call(bferl_io, get_tape).
+handle_event({put_character, Char}, {Input, Output}) ->
+    {ok, {Input, Output ++ [ Char ]}}.
 
-init(Tape) ->
-    {ok, Tape}.
+handle_call(get_character, {[], Output}) ->
+    {ok, eof, {[], Output}};
 
-handle_event(_Event, State) ->
-    {ok, State}.
+handle_call(get_character, {[Char | Rest], Output}) ->
+    {ok, Char, {Rest, Output}};
 
-handle_call(_Request, State) ->
-    Reply = ok,
-    {ok, Reply, State}.
+handle_call(get_tape, {_, Output} = State) ->
+    {ok, Output, State}.
 
 handle_info(_Info, State) ->
     {ok, State}.
