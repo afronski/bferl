@@ -3,7 +3,7 @@
 -include("../include/interpreter_definitions.hrl").
 
 -export([ new/0, new/1, load/2,
-          register_tape/1, register_console/1, register_io/3,
+          register_tape/1, register_console/1, register_io/4,
           get_memory_cell/2,
           step/1, run/1 ]).
 
@@ -17,13 +17,13 @@ load(Program, State) when is_list(Program) ->
     State#interpreter{instructions = Program}.
 
 register_tape(State) ->
-    register_io(fun bferl_io:get_character_from_tape/0, fun bferl_io:put_character/1, State).
+    register_io(fun bferl_io:get_character_from_tape/0, fun bferl_io:put_character/1, fun bferl_io:new_line/0, State).
 
 register_console(State) ->
-    register_io(fun bferl_io:get_character_from_console/0, fun bferl_io:put_character/1, State).
+    register_io(fun bferl_io:get_character_from_console/0, fun bferl_io:put_character/1, fun bferl_io:new_line/0, State).
 
-register_io(In, Out, State) when is_function(In) andalso is_function(Out) ->
-    State#interpreter{io = {In, Out}}.
+register_io(In, Out, NewLine, State) when is_function(In), is_function(Out), is_function(NewLine) ->
+    State#interpreter{io = {In, Out, NewLine}}.
 
 get_memory_cell(CellIndex, State) ->
     array:get(CellIndex, State#interpreter.memory).
@@ -49,8 +49,16 @@ step(State) ->
 run(State) ->
     NewState = step(State),
     case NewState of
-        end_of_program -> State;
-        _              -> run(NewState)
+        end_of_program ->
+            {_, _, NewLine} = State#interpreter.io,
+
+            case is_function(NewLine) of
+                true -> NewLine(), State;
+                false -> State
+            end;
+
+        _ ->
+            run(NewState)
     end.
 
 %% Opcodes
@@ -127,7 +135,7 @@ do(".", InputState) ->
     CellIndex = InputState#interpreter.memory_pointer,
     Value = get_memory_cell(CellIndex, InputState),
 
-    {_, Out} = InputState#interpreter.io,
+    {_, Out, _} = InputState#interpreter.io,
     Out(Value),
 
     IP = InputState#interpreter.instructions_pointer,
@@ -136,7 +144,7 @@ do(".", InputState) ->
 
 do(",", InputState) ->
     CellIndex = InputState#interpreter.memory_pointer,
-    {In, _} = InputState#interpreter.io,
+    {In, _, _} = InputState#interpreter.io,
 
     Value = In(),
     IP = InputState#interpreter.instructions_pointer,

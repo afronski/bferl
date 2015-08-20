@@ -38,16 +38,16 @@ other_parameters_should_be_set_to_proper_value(_Context) ->
     ?assertEqual([], State#interpreter.stack),
 
     ?assertEqual(undefined, State#interpreter.instructions),
-    ?assertEqual({undefined, undefined}, State#interpreter.io).
+    ?assertEqual({undefined, undefined, undefined}, State#interpreter.io).
 
 after_registering_io_process_state_should_update_that_field(_Context) ->
     State = bferl_programming_language_logic:new(),
 
     StateWithTape = bferl_programming_language_logic:register_tape(State),
-    ?assertEqual({fun bferl_io:get_character_from_tape/0, fun bferl_io:put_character/1}, StateWithTape#interpreter.io),
+    ?assertEqual({fun bferl_io:get_character_from_tape/0, fun bferl_io:put_character/1, fun bferl_io:new_line/0}, StateWithTape#interpreter.io),
 
     StateWithConsole = bferl_programming_language_logic:register_console(State),
-    ?assertEqual({fun bferl_io:get_character_from_console/0, fun bferl_io:put_character/1}, StateWithConsole#interpreter.io).
+    ?assertEqual({fun bferl_io:get_character_from_console/0, fun bferl_io:put_character/1, fun bferl_io:new_line/0}, StateWithConsole#interpreter.io).
 
 pointers_should_be_set_at_the_beginning_after_new(_Context) ->
     State = bferl_programming_language_logic:new(),

@@ -11,6 +11,10 @@ init([ GroupLeader ]) ->
     group_leader(GroupLeader, self()),
     {ok, empty}.
 
+handle_event(new_line, State) ->
+    io:nl(),
+    {ok, State};
+
 handle_event({put_character, [ Char | _ ] = S}, State) when is_list(S) ->
     io:format("~c", [ Char ]),
     {ok, State};
@@ -21,7 +25,8 @@ handle_event({put_character, Char}, State) ->
 
 handle_call(get_character, State) ->
     Result = case io:get_line(?BRAINFUCK_IO_PROMPT) of
-        [] -> 0;
+        [ 10 ] -> 0;
+        [ 13 ] -> 0;
         [ Char | _ ] -> Char
     end,
     {ok, Result, State}.

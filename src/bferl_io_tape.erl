@@ -8,6 +8,9 @@
 init([ InputTape ]) ->
     {ok, {InputTape, []}}.
 
+handle_event(new_line, State) ->
+    {ok, State};
+
 handle_event({put_character, Char}, {Input, Output}) ->
     {ok, {Input, Output ++ [ Char ]}}.
 
