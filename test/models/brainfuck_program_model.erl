@@ -29,8 +29,8 @@
 prop_programs_without_loops_should_have_IC_and_IP_equal_to_program_length() ->
     ?FORALL(Program, pure_program(),
             begin
-                Input = bferl_interpreter:init(to_tokens(Program)),
-                Output = bferl_interpreter:run(Input),
+                Input = bferl_programming_language_logic:new(to_tokens(Program)),
+                Output = bferl_programming_language_logic:run(Input),
 
                 (Output#interpreter.instructions_counter =:= length(Program)) and
                 (Output#interpreter.instructions_pointer =:= length(Program) + 1)
@@ -39,8 +39,8 @@ prop_programs_without_loops_should_have_IC_and_IP_equal_to_program_length() ->
 prop_programs_with_proper_loops_should_finish_in_finite_time() ->
     ?FORALL(Program, program_with_valid_loops(),
             begin
-                Input = bferl_interpreter:init(to_tokens(Program)),
-                Output = bferl_interpreter:run(Input),
+                Input = bferl_programming_language_logic:new(to_tokens(Program)),
+                Output = bferl_programming_language_logic:run(Input),
 
                 Output#interpreter.instructions_pointer =:= length(Program) + 1
             end).
