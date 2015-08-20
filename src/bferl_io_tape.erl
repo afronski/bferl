@@ -12,7 +12,7 @@ handle_event({put_character, Char}, {Input, Output}) ->
     {ok, {Input, Output ++ [ Char ]}}.
 
 handle_call(get_character, {[], Output}) ->
-    {ok, eof, {[], Output}};
+    {ok, 0, {[], Output}};
 
 handle_call(get_character, {[Char | Rest], Output}) ->
     {ok, Char, {Rest, Output}};

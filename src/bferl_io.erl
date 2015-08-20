@@ -26,7 +26,7 @@ get_character_from_tape() ->
 get_output_tape() ->
     gen_event:call(?MODULE, bferl_io_tape, get_tape).
 
-%% Private immplementation.
+%% Private implementation.
 
 get_character(From) ->
     gen_event:call(?MODULE, From, get_character).

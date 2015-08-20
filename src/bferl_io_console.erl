@@ -20,8 +20,11 @@ handle_event({put_character, Char}, State) ->
     {ok, State}.
 
 handle_call(get_character, State) ->
-    [ Char | _ ] = io:get_line(?BRAINFUCK_PROMPT),
-    {ok, Char, State}.
+    Result = case io:get_line(?BRAINFUCK_IO_PROMPT) of
+        [] -> 0;
+        [ Char | _ ] -> Char
+    end,
+    {ok, Result, State}.
 
 handle_info(_Info, State) ->
     {ok, State}.
