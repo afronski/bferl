@@ -6,7 +6,7 @@
 
 *Brainfuck* and *Brainfork* are well-known [*esoteric programming languages*](https://en.wikipedia.org/wiki/Esoteric_programming_language). While both are fully *turing complete*, they are not intened to practical use. :wink:
 
-**But** - each of them is an ideal candidate to learn how to write by yourself an *interpreter*, `REPL`, *compiler* or *virtual machine* and in overall - *play by doing it*. It is also an interesting place to learn and verify various concepts like e.g. *property based testing* (with [`manopapad/proper`](https://github.com/manopapad/proper)) or working with an amazing tracing support in *Erlang* (and equally terrific [`ferd/recon`](https://github.com/ferd/recon) library for detecting common problems).
+But each of them is an ideal candidate to learn how to write by yourself an *interpreter*, `REPL`, *compiler* or *virtual machine* and in overall - *play by doing it*. It is also an interesting place to learn and verify various concepts like e.g. *property based testing* (with [manopapad/proper](https://github.com/manopapad/proper)) or working with an amazing tracing support in *Erlang* (and equally terrific [ferd/recon](https://github.com/ferd/recon) library for detecting common problems).
 
 ## How to build and run it?
 
@@ -24,9 +24,9 @@
     - Compiler to *BEAM*:
       - Compiling code from file - `bferl_app:compile_file("hello_world.bf").`
       - Compile code delivered as a string - `bferl_app:compile_code(",+.")`
-      - Both commands will produce new module with `start().` command.
+      - Both commands will produce new module with `start` command.
         - You can start it by typing `MODULE_NAME_AFTER_COMPILATION:start().`
-        - If you would like to provide a tape with input characters you can do it by:
+        - If you would like to provide a *tape* with input characters you can do it by:
           - `MODULE_NAME_AFTER_COMPILATION:start("This is input tape content.").`
     - Virtual Machine:
       - Loading code from file - `bferl_app:run_file_on_vm("hello_world.bf").`
@@ -78,4 +78,4 @@ Here is the execution of example program which adds two digits (represented as a
 
 As a result we returned the internal state of the *interpreter* after the program execution.
 
-**Note**: you have probably noticed that it will not produce proper results if the result is greater than '9'. :wink:
+**Note**: You have probably noticed that it will not produce proper results if the result is greater than '9'. :wink:
