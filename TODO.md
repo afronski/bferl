@@ -2,15 +2,19 @@
   
 ## Next phase - *OTP*
 
-- [ ] Prepare it as an *OTP* system.
-  - [ ] Proper *OTP* application.
-  - [ ] Interpreter as a `gen_server`.
-  - [ ] *VM* as a `gen_server`.
-- [ ] Updating documentation (and *screenshots*).
+- [x] Prepare it as an *OTP* system.
+  - [x] Proper *OTP* application.
+  - [x] Interpreter as a `gen_server`.
+  - [x] *VM* as a `gen_server`.
+- [x] Updating documentation (and *screenshots*).
+- [ ] Implementing interpreter logic.
+  - [ ] REPL.
+  - [ ] Interactive visualization.
+  - [ ] Attaching tape.
+- [ ] Setting up `dialyzer` and preparing *type specifications*.
 - [ ] Add property based tests for:
   - [ ] Tokenizer
-  - [ ] I/O operations 
-- [ ] Setting up `dialyzer` and preparing *type specifications*.
+  - [ ] I/O operations
 
 ## Next phase - *Brainfork* and Compiler
 
