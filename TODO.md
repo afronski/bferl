@@ -7,14 +7,14 @@
   - [x] Interpreter as a `gen_server`.
   - [x] *VM* as a `gen_server`.
 - [x] Updating documentation (and *screenshots*).
+- [x] Add property based tests for:
+  - [x] Tokenizer
+  - [x] I/O operations
+- [ ] Setting up `dialyzer` and preparing *type specifications*.
 - [ ] Implementing interpreter logic.
   - [ ] REPL.
   - [ ] Interactive visualization.
   - [ ] Attaching tape.
-- [ ] Setting up `dialyzer` and preparing *type specifications*.
-- [ ] Add property based tests for:
-  - [ ] Tokenizer
-  - [ ] I/O operations
 
 ## Next phase - *Brainfork* and Compiler
 
