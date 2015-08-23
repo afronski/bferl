@@ -20,7 +20,8 @@ init_per_testcase(_TestCase, Config) ->
     {ok, Pid} = bferl_io:start_link(),
     [ {bferl_io, Pid} | Config ].
 
-end_per_testcase(_TestCase, [ {bferl_io, Pid} | _Rest]) ->
+end_per_testcase(_TestCase, Config) ->
+    Pid = proplists:get_value(bferl_io, Config),
     exit(Pid, normal),
     ok.
 
