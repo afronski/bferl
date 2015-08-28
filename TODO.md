@@ -10,7 +10,7 @@
 - [x] Add property based tests for:
   - [x] Tokenizer
   - [x] I/O operations
-  - [ ] Setting up `dialyzer`.
+- [ ] Setting up `dialyzer`.
   - [ ] Preparing *type specifications* for existing elements.
 - [ ] Implementing interpreter logic.
   - [ ] REPL.
