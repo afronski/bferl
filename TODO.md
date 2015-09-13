@@ -1,5 +1,5 @@
 # TODO
-  
+
 ## Next phase - *OTP*
 
 - [x] Prepare it as an *OTP* system.
@@ -10,7 +10,7 @@
 - [x] Add property based tests for:
   - [x] Tokenizer
   - [x] I/O operations
-- [ ] Setting up `dialyzer`.
+- [x] Setting up `dialyzer`.
   - [ ] Preparing *type specifications* for existing elements.
 - [ ] Implementing interpreter logic.
   - [ ] REPL.
@@ -20,7 +20,7 @@
 ## Next phase - *Brainfork* and Compiler
 
 - [ ] Adding support for `Y` (*Brainfork*).
-  - [ ] Fork uses new process with cloned *VM* state. 
+  - [ ] Fork uses new process with cloned *VM* state.
 - [ ] Compiling source to the *BEAM* representation.
   - [ ] Compile it to the single function inside module with *fixed* structure.
 
