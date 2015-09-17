@@ -26,12 +26,14 @@ attach_console() ->
 
 %% Convenient wrappers.
 
+-spec run_file(string()) -> bferl_types:interpreter_state().
 run_file(Filename) ->
     Program = bferl_tokenizer:from_file(Filename),
     State = bferl_programming_language_logic:new(Program),
     StateWithConsole = bferl_programming_language_logic:register_console(State),
     bferl_programming_language_logic:run(StateWithConsole).
 
+-spec run_code(string()) -> bferl_types:interpreter_state().
 run_code(Code) ->
     Program = bferl_tokenizer:from_string(Code),
     State = bferl_programming_language_logic:new(Program),

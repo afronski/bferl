@@ -4,6 +4,11 @@
 -define(MEMORY_SIZE, 30000).
 -define(EMPTY_MEMORY, array:new([ {size, ?MEMORY_SIZE}, {fixed, true}, {default, 0} ])).
 
--record(interpreter, { io = {undefined, undefined, undefined}, stack = [], instructions_counter = 0,
-                       instructions = undefined, instructions_pointer = 1,
-                       memory_pointer = 0, memory = ?EMPTY_MEMORY }).
+-record(interpreter, { io = {undefined, undefined, undefined} :: bferl_types:io_callbacks(),
+                       stack = []                             :: list(pos_integer()),
+                       instructions_counter = 0               :: non_neg_integer(),
+                       instructions = undefined               :: undefined | bferl_types:instructions(),
+                       instructions_pointer = 1               :: pos_integer(),
+                       memory_pointer = 0                     :: non_neg_integer(),
+                       memory = ?EMPTY_MEMORY                 :: array:array(integer())
+                     }).

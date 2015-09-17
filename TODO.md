@@ -11,7 +11,8 @@
   - [x] Tokenizer
   - [x] I/O operations
 - [x] Setting up `dialyzer`.
-  - [ ] Preparing *type specifications* for existing elements.
+  - [x] Basic type specifications and file structure.
+  - [ ] Preparing *type specifications* for rest.
 - [ ] Implementing interpreter logic.
   - [ ] REPL.
   - [ ] Interactive visualization.
