@@ -7,27 +7,35 @@
           get_memory_cell/2,
           step/1, run/1 ]).
 
+-spec new() -> bferl_types:interpreter_state().
 new() ->
     #interpreter{}.
 
+-spec new(bferl_types:program()) -> bferl_types:interpreter_state().
 new(Program) ->
     load(Program, #interpreter{}).
 
+-spec load(bferl_types:program(), bferl_types:interpreter_state()) -> bferl_types:interpreter_state().
 load(Program, State) when is_list(Program) ->
     State#interpreter{instructions = Program}.
 
+-spec register_tape(bferl_types:interpreter_state()) -> bferl_types:interpreter_state().
 register_tape(State) ->
     register_io(fun bferl_io:get_character_from_tape/0, fun bferl_io:put_character/1, fun bferl_io:new_line/0, State).
 
+-spec register_console(bferl_types:interpreter_state()) -> bferl_types:interpreter_state().
 register_console(State) ->
     register_io(fun bferl_io:get_character_from_console/0, fun bferl_io:put_character/1, fun bferl_io:new_line/0, State).
 
+-spec register_io(fun(), fun(), fun(), bferl_types:interpreter_state()) -> bferl_types:interpreter_state().
 register_io(In, Out, NewLine, State) when is_function(In), is_function(Out), is_function(NewLine) ->
     State#interpreter{io = {In, Out, NewLine}}.
 
+-spec get_memory_cell(non_neg_integer(), bferl_types:interpreter_state()) -> integer().
 get_memory_cell(CellIndex, State) ->
     array:get(CellIndex, State#interpreter.memory).
 
+-spec step(bferl_types:interpreter_state()) -> no_program_loaded | end_of_program | bferl_types:interpreter_state().
 step(State) when State#interpreter.instructions =:= undefined ->
     no_program_loaded;
 
@@ -46,6 +54,7 @@ step(State) ->
     IC = TemporaryState#interpreter.instructions_counter,
     TemporaryState#interpreter{instructions_counter = IC + 1}.
 
+-spec run(bferl_types:interpreter_state()) -> bferl_types:interpreter_state().
 run(State) ->
     NewState = step(State),
     case NewState of
@@ -65,6 +74,7 @@ run(State) ->
 %% --
 %% Brainfuck
 
+-spec do(bferl_types:opcodes(), bferl_types:interpreter_state()) -> bferl_types:interpreter_state().
 do("+", InputState) ->
     CellIndex = InputState#interpreter.memory_pointer,
     Cell = get_memory_cell(CellIndex, InputState),
@@ -154,6 +164,7 @@ do(",", InputState) ->
 
 %% Opcodes Helper.
 
+-spec find_corresponding_closing_bracket(pos_integer(), bferl_types:program()) -> non_neg_integer() | -1.
 find_corresponding_closing_bracket(IP, Program) when is_integer(IP), is_list(Program) ->
     SubProgram = lists:sublist(Program, IP + 1, length(Program)),
     SubProgramWithIndexes = lists:zip(SubProgram, lists:seq(1, length(SubProgram))),
@@ -161,6 +172,8 @@ find_corresponding_closing_bracket(IP, Program) when is_integer(IP), is_list(Pro
     {NewIP, 0} = lists:foldl(fun handle_brackets/2, {-1, 0}, SubProgramWithIndexes),
     NewIP.
 
+-type loop_ending() :: {non_neg_integer() | -1, non_neg_integer()}.
+-spec handle_brackets({string(), non_neg_integer()}, loop_ending()) -> loop_ending().
 handle_brackets({"]", Position}, {OldPosition, 0}) when OldPosition =:= -1 -> {Position, 0};
 handle_brackets({"]", _}, {Position, N}) when Position =:= -1 -> {Position, N - 1};
 handle_brackets({"[", _}, {Position, N}) when Position =:= -1 -> {Position, N + 1};
