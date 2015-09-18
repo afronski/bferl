@@ -12,7 +12,7 @@
   - [x] I/O operations
 - [x] Setting up `dialyzer`.
   - [x] Basic type specifications and file structure.
-  - [ ] Preparing *type specifications* for rest.
+  - [x] Preparing *type specifications* for rest.
 - [ ] Implementing interpreter logic.
   - [ ] REPL.
   - [ ] Interactive visualization.
