@@ -1,34 +1,30 @@
 # TODO
 
-## Next phase - *OTP*
+## Next phase - `REPL`
 
-- [x] Prepare it as an *OTP* system.
-  - [x] Proper *OTP* application.
-  - [x] Interpreter as a `gen_server`.
-  - [x] *VM* as a `gen_server`.
-- [x] Updating documentation (and *screenshots*).
-- [x] Add property based tests for:
-  - [x] Tokenizer
-  - [x] I/O operations
-- [x] Setting up `dialyzer`.
-  - [x] Basic type specifications and file structure.
-  - [x] Preparing *type specifications* for rest.
 - [ ] Implementing interpreter logic.
-  - [ ] REPL.
-  - [ ] Interactive visualization.
-  - [ ] Attaching tape.
+  - [ ] REPL implementation.
+  - [ ] REPL helpers:
+    - [ ] Printing actual state.
+    - [ ] Interactive visualization for each step.
+    - [ ] Attaching a tape with predefined input.
 
-## Next phase - *Brainfork* and Compiler
+## Next phase - Compiler
 
-- [ ] Adding support for `Y` (*Brainfork*).
-  - [ ] Fork uses new process with cloned *VM* state.
 - [ ] Compiling source to the *BEAM* representation.
   - [ ] Compile it to the single function inside module with *fixed* structure.
+  - [ ] Helpers for showing transpiled representation and type of the program.
 
 ## Next phase - Virtual Machine
 
-- [ ] *Heuristic* optimizations (e.g. rolling up incrementations / decrementations).
+- [ ] *Heuristic* optimizations (e.g. rolling up increments / decrements, building up jump table first).
 - [ ] *Hot Code* detection.
   - [ ] Basic optimizations based on pattern and usage.
-- [ ] Visualizations - *API*, *introspection*, *profiler* (like http://privateeye.io).
-  - [ ] Graphic visualization in *d3.js*.
+
+## Next phase - *Brainfork*
+
+- [ ] Adding support for `Y` (*Brainfork*) - it make sense only in the compiler and VM.
+  - [ ] Do a detection based on the file extension.
+    - [ ] Code provided as a string should be always interpreted as a *Brainfuck*.
+  - [ ] For VM - fork uses new *VM* process with cloned state.
+  - [ ] For Compiler - fork should `spawn_link` a new process with logic and its own memory.

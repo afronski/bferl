@@ -16,7 +16,7 @@ But each of them is an ideal candidate to learn how to write by yourself an *int
 4. Invoke following commands in the *Erlang* shell:
   - `application:ensure_all_started(bferl).`
   - `bferl_app:attach_console().`
-  - Now you can play with *Brainfuck* and *Brainfork* programs by built-in:
+  - Now you can play with *Brainfuck* programs by built-in:
     - Interpreter:
       - Loading code from file - `bferl_app:run_file("hello_world.bf").`
       - Evaluating code - `bferl_app:run_code(",+.").`
@@ -33,7 +33,11 @@ But each of them is an ideal candidate to learn how to write by yourself an *int
       - Evaluating code - `bferl_app:run_code_on_vm(",+.").`
       - Both methods have ability to run program in debug mode.
         - Add `debug_mode` flag to run it with debugging annotations:
-          - `bferl_app:run_code_on_vm(",+.", [ debug_mode ]).`
+        - `bferl_app:run_code_on_vm(",+.", [ debug_mode ]).`
+   - *Brainfork* variation can be delivered to the *compiler* and *virtual
+     machine* facilities only via functions that read files.
+     - That particular file should have extension `.bfo`, otherwise it will be
+       interpreted as a *Brainfuck*.
 5. If you would like to run tests, invoke command: `rebar3 ct`.
 
 ## Architecture
