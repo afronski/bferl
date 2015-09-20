@@ -44,10 +44,14 @@ after_registering_io_process_state_should_update_that_field(_Context) ->
     State = bferl_programming_language_logic:new(),
 
     StateWithTape = bferl_programming_language_logic:register_tape(State),
-    ?assertEqual({fun bferl_io:get_character_from_tape/0, fun bferl_io:put_character/1, fun bferl_io:new_line/0}, StateWithTape#interpreter.io),
+    ?assertEqual({fun bferl_io:get_character_from_tape/0,
+                  fun bferl_io:put_character_to_tape/1,
+                  fun bferl_io:new_line_on_tape/0}, StateWithTape#interpreter.io),
 
     StateWithConsole = bferl_programming_language_logic:register_console(State),
-    ?assertEqual({fun bferl_io:get_character_from_console/0, fun bferl_io:put_character/1, fun bferl_io:new_line/0}, StateWithConsole#interpreter.io).
+    ?assertEqual({fun bferl_io:get_character_from_console/0,
+                  fun bferl_io:put_character_to_console/1,
+                  fun bferl_io:new_line_on_console/0}, StateWithConsole#interpreter.io).
 
 pointers_should_be_set_at_the_beginning_after_new(_Context) ->
     State = bferl_programming_language_logic:new(),
@@ -70,6 +74,10 @@ you_should_be_able_run_program(_Context) ->
 
     ?assertEqual(length(Output#interpreter.instructions) + 1, Output#interpreter.instructions_pointer),
     ?assertEqual(length(Output#interpreter.instructions), Output#interpreter.instructions_counter),
+
+    ?assertEqual("+", bferl_programming_language_logic:get_opcode(1, Output)),
+    ?assertEqual("+", bferl_programming_language_logic:get_opcode(2, Output)),
+    ?assertEqual("+", bferl_programming_language_logic:get_opcode(3, Output)),
 
     ?assertEqual(3, bferl_programming_language_logic:get_memory_cell(0, Output)).
 

@@ -4,7 +4,7 @@
 
 -export([ new/0, new/1, load/2,
           register_tape/1, register_console/1, register_io/4,
-          get_memory_cell/2,
+          get_memory_cell/2, get_opcode/2,
           step/1, run/1 ]).
 
 -spec new() -> bferl_types:interpreter_state().
@@ -21,19 +21,31 @@ load(Program, State) when is_list(Program) ->
 
 -spec register_tape(bferl_types:interpreter_state()) -> bferl_types:interpreter_state().
 register_tape(State) ->
-    register_io(fun bferl_io:get_character_from_tape/0, fun bferl_io:put_character/1, fun bferl_io:new_line/0, State).
+    register_io(fun bferl_io:get_character_from_tape/0,
+                fun bferl_io:put_character_to_tape/1,
+                fun bferl_io:new_line_on_tape/0,
+                State).
 
 -spec register_console(bferl_types:interpreter_state()) -> bferl_types:interpreter_state().
 register_console(State) ->
-    register_io(fun bferl_io:get_character_from_console/0, fun bferl_io:put_character/1, fun bferl_io:new_line/0, State).
+    register_io(fun bferl_io:get_character_from_console/0,
+                fun bferl_io:put_character_to_console/1,
+                fun bferl_io:new_line_on_console/0,
+                State).
 
 -spec register_io(fun(), fun(), fun(), bferl_types:interpreter_state()) -> bferl_types:interpreter_state().
 register_io(In, Out, NewLine, State) when is_function(In), is_function(Out), is_function(NewLine) ->
     State#interpreter{io = {In, Out, NewLine}}.
 
 -spec get_memory_cell(non_neg_integer(), bferl_types:interpreter_state()) -> integer().
-get_memory_cell(CellIndex, State) ->
-    array:get(CellIndex, State#interpreter.memory).
+get_memory_cell(CellIndex, State) when CellIndex >= 0, CellIndex < ?MEMORY_SIZE ->
+    array:get(CellIndex, State#interpreter.memory);
+get_memory_cell(_CellIndex, _State) -> 0.
+
+-spec get_opcode(pos_integer(), bferl_types:interpreter_state()) -> bferl_types:opcodes().
+get_opcode(Index, State) when Index >= 1, Index =< length(State#interpreter.instructions) ->
+    lists:nth(Index, State#interpreter.instructions);
+get_opcode(_Index, _State) -> "".
 
 -spec step(bferl_types:interpreter_state()) -> no_program_loaded | end_of_program | bferl_types:interpreter_state().
 step(State) when State#interpreter.instructions =:= undefined ->

@@ -31,10 +31,15 @@ testing_input_and_output(_Context) ->
     bferl_io:tape("A"),
     StateWithIO = bferl_programming_language_logic:register_tape(State),
 
+    InputTape = bferl_io:get_input_tape(),
+    ?assertEqual("A", InputTape),
+
     Output = bferl_programming_language_logic:run(StateWithIO),
 
+    InputTapeAfter = bferl_io:get_input_tape(),
     Tape = bferl_io:get_output_tape(),
 
+    ?assertEqual([], InputTapeAfter),
     ?assertEqual("B", Tape),
     ?assertEqual(length(Output#interpreter.instructions), Output#interpreter.instructions_counter).
 

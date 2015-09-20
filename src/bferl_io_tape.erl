@@ -8,11 +8,14 @@
 init([ InputTape ]) ->
     {ok, {InputTape, []}}.
 
-handle_event(new_line, State) ->
-    {ok, State};
+handle_event(_Event, State) ->
+    {ok, State}.
 
-handle_event({put_character, Char}, {Input, Output}) ->
-    {ok, {Input, Output ++ [ Char ]}}.
+handle_call(new_line, State) ->
+    {ok, printed, State};
+
+handle_call({put_character, Char}, {Input, Output}) ->
+    {ok, printed, {Input, Output ++ [ Char ]}};
 
 handle_call(get_character, {[], Output}) ->
     {ok, 0, {[], Output}};
@@ -20,7 +23,10 @@ handle_call(get_character, {[], Output}) ->
 handle_call(get_character, {[Char | Rest], Output}) ->
     {ok, Char, {Rest, Output}};
 
-handle_call(get_tape, {_, Output} = State) ->
+handle_call(get_input_tape, {Input, _} = State) ->
+    {ok, Input, State};
+
+handle_call(get_output_tape, {_, Output} = State) ->
     {ok, Output, State}.
 
 handle_info(_Info, State) ->

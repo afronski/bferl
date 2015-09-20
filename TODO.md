@@ -2,13 +2,13 @@
 
 ## Next phase - `REPL`
 
-- [ ] Implementing interpreter logic.
+- [x] Implementing interpreter logic.
   - [x] REPL skeleton.
   - [x] REPL helpers:
     - [x] Printing actual state.
     - [x] Interactive visualization for each step.
     - [x] Attaching a tape with predefined input.
-  - [ ] Interpreter mechanism implemented inside `gen_server`.
+  - [x] Interpreter mechanism implemented inside `gen_server`.
 
 ## Next phase - Compiler
 

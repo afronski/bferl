@@ -17,7 +17,6 @@ all() ->
       edge_cases_for_moving_pointer,
       testing_loop, testing_nested_loops ].
 
-
 increment_value_in_the_cell(_Context) ->
     State = bferl_programming_language_logic:new(["+"]),
     Output = bferl_programming_language_logic:run(State),
