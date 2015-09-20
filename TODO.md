@@ -1,20 +1,19 @@
 # TODO
 
-## Next phase - `REPL`
+## Next phase - Compiler and REPL improvements
 
-- [x] Implementing interpreter logic.
-  - [x] REPL skeleton.
-  - [x] REPL helpers:
-    - [x] Printing actual state.
-    - [x] Interactive visualization for each step.
-    - [x] Attaching a tape with predefined input.
-  - [x] Interpreter mechanism implemented inside `gen_server`.
-
-## Next phase - Compiler
-
-- [ ] Compiling source to the *BEAM* representation.
-  - [ ] Compile it to the single function inside module with *fixed* structure.
-  - [ ] Helpers for showing transpiled representation and type of the program.
+- [ ] REPL:
+  - [ ] Run only properly balanced code fragments.
+    - [ ] If only part of the loop delivered, wait until it will be complete.
+    - [ ] Use different prompt for that.
+  - [ ] Add *stepping mode*:
+    - [ ] You can either execute one instruction at a time.
+    - [ ] Or disable that mode, of course you have to wait for complete loops as well.
+- [ ] Compiler:
+  - [ ] Verify that loops are closed before compilation.
+  - [ ] Compiling source to the *BEAM* representation.
+    - [ ] Compile it to the single function inside module with *fixed* structure.
+    - [ ] Helpers for showing transpiled representation and type of the program.
 
 ## Next phase - Virtual Machine
 
