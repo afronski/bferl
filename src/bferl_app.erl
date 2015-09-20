@@ -39,7 +39,7 @@ run_code(Code) ->
     bferl_programming_language_logic:run(StateWithConsole).
 
 repl() ->
-    not_implemented_yet.
+    bferl_repl:start_loop().
 
 compile_file(_Filename) ->
     not_implemented_yet.
