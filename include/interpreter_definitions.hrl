@@ -1,4 +1,5 @@
 -define(BRAINFUCK_INTERPRETER_PROMPT, "bf> ").
+-define(BRAINFUCK_INTERPRETER_PROMPT_MORE, "bf..> ").
 -define(BRAINFUCK_IO_PROMPT, "> ").
 
 -define(MEMORY_SIZE, 30000).

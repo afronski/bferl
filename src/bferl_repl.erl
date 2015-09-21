@@ -121,6 +121,15 @@ perform_repl_command("t" ++ Rest, State) -> attach_tape(Rest, State);
 
 perform_repl_command(Command, State) -> {{unknown_repl_command, Command}, State}.
 
+evaluate_code_internal_call(Code) ->
+    InterpreterStateBeforeEvaluation = bferl_tools_interpreter:get_state(),
+
+    try
+        bferl_tools_interpreter:evaluate_code(Code)
+    catch
+        exit:{timeout, _} -> {timeout, InterpreterStateBeforeEvaluation}
+    end.
+
 dispatch([$? | CommandName], State) ->
     {_, NewState} = Result = perform_repl_command(CommandName, State),
 
@@ -137,15 +146,31 @@ dispatch([], State) ->
     {continue, State};
 
 dispatch(BrainfuckCode, State) ->
-    bferl_tools_interpreter:evaluate_code(BrainfuckCode),
+    {EvaluationStatus, Response} = evaluate_code_internal_call(BrainfuckCode),
 
-    case maps:get("always_pretty_print_state", State) of
-        true -> pretty_print_state(State);
-        _    -> {more, State}
+    {ReplStatus, ModifiedState} = case EvaluationStatus of
+        more_tokens -> {continue, State#{"prompt" := ?BRAINFUCK_INTERPRETER_PROMPT_MORE}};
+        valid       -> {continue, State#{"prompt" := ?BRAINFUCK_INTERPRETER_PROMPT}};
+        timeout     -> {timeout, State};
+        _           -> {error, State}
+    end,
+
+    case ReplStatus of
+        continue ->
+            case maps:get("always_pretty_print_state", ModifiedState) of
+                true -> pretty_print_state(ModifiedState);
+                _    -> {more, ModifiedState}
+            end;
+
+        timeout ->
+            {{timeout, Response}, ModifiedState};
+
+        error ->
+            {{syntax_error, Response}, ModifiedState}
     end.
 
 step(State) ->
-    Line = io:get_line(?BRAINFUCK_INTERPRETER_PROMPT),
+    Line = io:get_line(maps:get("prompt", State)),
     {Status, NewState} = dispatch(sanitize(Line), State),
 
     Result = case Status of
@@ -154,7 +179,16 @@ step(State) ->
             continue;
 
         {no_input_for_tape, Input} ->
-            print_error(io_lib:format("You did not passed tape content with command argument: '~s'.", [Input])),
+            print_error(io_lib:format("No content passed in tape command argument: '~s'.", [Input])),
+            continue;
+
+        {syntax_error, Code} ->
+            print_error(io_lib:format("Last instructions contained a syntax error: '~s'.", [Code])),
+            continue;
+
+        {timeout, InterpreterStateToRestore} ->
+            print_error(io_lib:format("Last instructions caused a long running loop. State restored.", [])),
+            bferl_tools_interpreter:restore(InterpreterStateToRestore),
             continue;
 
         exit ->
@@ -170,4 +204,6 @@ step(State) ->
     end.
 
 start_loop() ->
-    step(#{"always_pretty_print_state" => false, "tape" => no_tape}).
+    step(#{"always_pretty_print_state" => false,
+           "prompt" => ?BRAINFUCK_INTERPRETER_PROMPT,
+           "tape" => no_tape}).
