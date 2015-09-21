@@ -3,9 +3,10 @@
 ## Next phase - Compiler and REPL improvements
 
 - [ ] REPL:
-  - [ ] Run only properly balanced code fragments.
-    - [ ] If only part of the loop delivered, wait until it will be complete.
-    - [ ] Use different prompt for that.
+  - [x] Run only properly balanced code fragments.
+    - [x] If only part of the loop delivered, wait until it will be complete.
+    - [x] Use different prompt for that.
+    - [x] Handle infinite loops.
   - [ ] Add *stepping mode*:
     - [ ] You can either execute one instruction at a time.
     - [ ] Or disable that mode, of course you have to wait for complete loops as well.
