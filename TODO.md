@@ -1,15 +1,19 @@
 # TODO
 
-## Next phase - Compiler and REPL improvements
+## Next phase - REPL improvements
 
-- [ ] REPL:
-  - [x] Run only properly balanced code fragments.
-    - [x] If only part of the loop delivered, wait until it will be complete.
-    - [x] Use different prompt for that.
-    - [x] Handle infinite loops.
-  - [ ] Add *stepping mode*:
-    - [ ] You can either execute one instruction at a time.
-    - [ ] Or disable that mode, of course you have to wait for complete loops as well.
+- [x] Run only properly balanced code fragments.
+  - [x] If only part of the loop delivered, wait until it will be complete.
+  - [x] Use different prompt for that.
+- [x] Handle infinite loops.
+- [x] Help command.
+- [ ] *Interactive mode with stepping by one instruction at a time*:
+  - [x] Change the old interactive mode to *auto print* mode.
+  - [x] It is a toggle and you have to wait for complete loops as well.
+  - [ ] You can execute one instruction at a time.
+
+## Next phase - Compiler
+
 - [ ] Compiler:
   - [ ] Verify that loops are closed before compilation.
   - [ ] Compiling source to the *BEAM* representation.
