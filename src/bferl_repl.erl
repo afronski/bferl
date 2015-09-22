@@ -52,10 +52,17 @@ pretty_print_state(State) ->
         _       -> {bferl_io:get_input_tape(), bferl_io:get_output_tape()}
     end,
 
+    DebugModeState = maps:get("debug_mode", State),
+
+    DebugMode = case DebugModeState of
+        true -> "D";
+        _    -> "-"
+    end,
+
     io:format("--MEMORY---------------------------~n", []),
     io:format(".. ~3B ~3B (~3B) ~3B ~3B .. SP: ~3B~n", Memory),
     io:format("..  -2  -1    0   +1  +2 .. MP: ~3B~n", [MP]),
-    io:format("--CODE-----------------------------~n", []),
+    io:format("--CODE---------------------------~1s-~n", [DebugMode]),
     io:format(".. ~3s ~3s ( ~1s ) ~3s ~3s .. IC: ~3B~n", Code),
     io:format("..  -2  -1   0    +1  +2 .. IP: ~3B~n", [IP]),
     io:format("--TAPE-----------------------------~n", []),
@@ -70,7 +77,10 @@ help(State) ->
     io:format("~n* Available commands:                                       ~n~n", []),
     io:format("  ?h, ?help        - This message. List of available commands.  ~n", []),
     io:format("  ?e, ?exit        - Exit the REPL.                             ~n", []),
-    io:format("  ?i, ?interactive - Printing state of the REPL after each      ~n", []),
+    io:format("  ?i, ?interactive - Debugging with step mode. Executing whole  ~n", []),
+    io:format("                     input atomically, one element at a time    ~n", []),
+    io:format("                     (toggle).                                  ~n", []),
+    io:format("  ?a, ?autoprint   - Printing state of the REPL after each      ~n", []),
     io:format("                     evaluation or command (toggle).            ~n", []),
     io:format("  ?c, ?clear       - Clear whole REPL state.                    ~n", []),
     io:format("  ?r, ?reset       - Reset only pointers in the REPL state.     ~n", []),
@@ -81,6 +91,17 @@ help(State) ->
     io:format("----------------------------------------------------------------~n", []),
 
     {more, State}.
+
+toggle_debug_mode(State) ->
+    bferl_tools_interpreter:debug_mode(),
+
+    DebugModeState = maps:get("debug_mode", State),
+    ModifiedState = case not DebugModeState of
+        true -> State#{"prompt" := ?BRAINFUCK_INTERPRETER_PROMPT_DEBUG};
+        _    -> State#{"prompt" := ?BRAINFUCK_INTERPRETER_PROMPT}
+    end,
+
+    {more, ModifiedState#{"debug_mode" := not DebugModeState}}.
 
 toggle_pretty_print(State) ->
     PrettyPrintState = maps:get("always_pretty_print_state", State),
@@ -124,8 +145,11 @@ perform_repl_command("h", State) -> help(State);
 perform_repl_command("exit", State) -> {exit, State};
 perform_repl_command("e", State) -> {exit, State};
 
-perform_repl_command("interactive", State) -> {more, toggle_pretty_print(State)};
-perform_repl_command("i", State) -> {more, toggle_pretty_print(State)};
+perform_repl_command("interactive", State) -> toggle_debug_mode(State);
+perform_repl_command("i", State) -> toggle_debug_mode(State);
+
+perform_repl_command("autoprint", State) -> {more, toggle_pretty_print(State)};
+perform_repl_command("a", State) -> {more, toggle_pretty_print(State)};
 
 perform_repl_command("clear", State) -> clear(State);
 perform_repl_command("c", State) -> clear(State);
@@ -168,9 +192,14 @@ dispatch([], State) ->
 dispatch(BrainfuckCode, State) ->
     {EvaluationStatus, Response} = evaluate_code_internal_call(BrainfuckCode),
 
+    {Prompt, PromptMore} = case maps:get("debug_mode", State) of
+        true -> {?BRAINFUCK_INTERPRETER_PROMPT_DEBUG, ?BRAINFUCK_INTERPRETER_PROMPT_DEBUG_MORE};
+        _    -> {?BRAINFUCK_INTERPRETER_PROMPT, ?BRAINFUCK_INTERPRETER_PROMPT_MORE}
+    end,
+
     {ReplStatus, ModifiedState} = case EvaluationStatus of
-        more_tokens -> {continue, State#{"prompt" := ?BRAINFUCK_INTERPRETER_PROMPT_MORE}};
-        valid       -> {continue, State#{"prompt" := ?BRAINFUCK_INTERPRETER_PROMPT}};
+        more_tokens -> {continue, State#{"prompt" := PromptMore}};
+        valid       -> {continue, State#{"prompt" := Prompt}};
         timeout     -> {timeout, State};
         _           -> {error, State}
     end,
@@ -225,5 +254,6 @@ step(State) ->
 
 start_loop() ->
     step(#{"always_pretty_print_state" => false,
+           "debug_mode" => false,
            "prompt" => ?BRAINFUCK_INTERPRETER_PROMPT,
            "tape" => no_tape}).

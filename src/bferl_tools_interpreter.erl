@@ -9,6 +9,7 @@
           clear/0, reset/0,
           tape_attached/0,
           evaluate_code/1,
+          debug_mode/0,
           validate/1 ]).
 
 -export([ init/1,
@@ -36,6 +37,9 @@ tape_attached() ->
 evaluate_code(Code) ->
     gen_server:call(?MODULE, {eval, Code}).
 
+debug_mode() ->
+    gen_server:call(?MODULE, toggle_debug_mode).
+
 new_state() ->
     bferl_programming_language_logic:register_console(bferl_programming_language_logic:new()).
 
@@ -59,11 +63,7 @@ validate([Head | Tail]) ->
     validation_rules(Head, Tail, 0).
 
 init([]) ->
-    State = #{"interpreter" => new_state()},
-    {ok, State};
-
-init(StartInterpreterState) ->
-    State = #{"interpreter" => StartInterpreterState},
+    State = #{"interpreter" => new_state(), "debug_mode" => false},
     {ok, State}.
 
 handle_call({restore, InterpreterState}, _From, State) ->
@@ -123,7 +123,12 @@ handle_call({eval, Code}, _From, State) ->
                     exit(Pid, kill),
                     {noreply, State}
             end
-    end.
+    end;
+
+handle_call(toggle_debug_mode, _From, State) ->
+    DebugModeState = maps:get("debug_mode", State),
+    NewState = State#{"debug_mode" := not DebugModeState},
+    {reply, NewState, NewState}.
 
 handle_cast(_Message, State) ->
     {noreply, State}.
