@@ -65,6 +65,23 @@ pretty_print_state(State) ->
 
     {more, State}.
 
+help(State) ->
+    io:format("--bferl--------------------------------------------by-afronski--~n", []),
+    io:format("~n* Available commands:                                       ~n~n", []),
+    io:format("  ?h, ?help        - This message. List of available commands.  ~n", []),
+    io:format("  ?e, ?exit        - Exit the REPL.                             ~n", []),
+    io:format("  ?i, ?interactive - Printing state of the REPL after each      ~n", []),
+    io:format("                     evaluation or command (toggle).            ~n", []),
+    io:format("  ?c, ?clear       - Clear whole REPL state.                    ~n", []),
+    io:format("  ?r, ?reset       - Reset only pointers in the REPL state.     ~n", []),
+    io:format("  ?s, ?state       - Immediately print state of the REPL.       ~n", []),
+    io:format("  ?t[T], ?tape[T]  - Attach new input tape, with content        ~n", []),
+    io:format("                     represented by 'T' sequence inside square  ~n", []),
+    io:format("                     brackets.                                ~n~n", []),
+    io:format("----------------------------------------------------------------~n", []),
+
+    {more, State}.
+
 toggle_pretty_print(State) ->
     PrettyPrintState = maps:get("always_pretty_print_state", State),
     State#{"always_pretty_print_state" := not PrettyPrintState }.
@@ -100,6 +117,9 @@ attach_tape(Input, State) ->
             bferl_tools_interpreter:tape_attached(),
             {more, NewState}
     end.
+
+perform_repl_command("help", State) -> help(State);
+perform_repl_command("h", State) -> help(State);
 
 perform_repl_command("exit", State) -> {exit, State};
 perform_repl_command("e", State) -> {exit, State};
