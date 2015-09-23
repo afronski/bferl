@@ -11,7 +11,7 @@
 
 ### REPL
 
-- Working with `REPL` - `bferl_app:repl().`
+- Working with *REPL* - `bferl_app:repl().`
 - Commands
   - *Autoprint*
   - *Debug Mode*

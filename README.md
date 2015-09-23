@@ -6,7 +6,7 @@
 
 *Brainfuck* and *Brainfork* are well-known [*esoteric programming languages*](https://en.wikipedia.org/wiki/Esoteric_programming_language). While both are fully *turing complete*, they are not intened to practical use. :wink:
 
-But each of them is an ideal candidate to learn how to write by yourself an *interpreter*, `REPL`, *compiler* or *virtual machine* and in overall - *play by doing it*. It is also an interesting place to learn and verify various concepts like e.g. *property based testing* (with [manopapad/proper](https://github.com/manopapad/proper)) or working with an amazing tracing support in *Erlang* (and equally terrific [ferd/recon](https://github.com/ferd/recon) library for detecting common problems).
+But each of them is an ideal candidate to learn how to write by yourself an *interpreter*, *REPL*, *compiler* or *virtual machine* and in overall - *play by doing it*. It is also an interesting place to learn and verify various concepts like e.g. *property based testing* (with [manopapad/proper](https://github.com/manopapad/proper)) or working with an amazing tracing support in *Erlang* (and equally terrific [ferd/recon](https://github.com/ferd/recon) library for detecting common problems).
 
 ## How to build and run it?
 
@@ -41,6 +41,6 @@ As a result of the invocation we returned the internal state of the *interpreter
 Interested in more? Dive into one of these pages:
 
 - [Architecture](/docs/Architecture.md) - General overview and Architecture documentation.
-- [REPL](/docs/REPL.md) - Description of `REPL` and *Interpreter* subsystem.
+- [REPL](/docs/REPL.md) - Description of *REPL* and *Interpreter* subsystem.
 - [BEAM Compiler](/docs/Compiler.md) - Description of the *Compiler* subsystem.
 - [Virtual Machine](/docs/VirtualMachine.md) - Description of the *Virtual Machine* subsystem.

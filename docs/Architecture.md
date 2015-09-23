@@ -6,7 +6,7 @@
 
 ![Supervision Tree for `bferl`](/docs/supervision-tree.png)
 
-Each service (*interpreter* with `REPL`, *compiler* and *virtual machine*) are gathered into one group called *tools*. Basically, each one is isolated from the others and crashing one of them do not affect others, so they can restart individually without any problems.
+Each service (*interpreter* with *REPL*, *compiler* and *virtual machine*) are gathered into one group called *tools*. Basically, each one is isolated from the others and crashing one of them do not affect others, so they can restart individually without any problems.
 
 ## Internal Data Structure
 
