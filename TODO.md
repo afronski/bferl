@@ -7,10 +7,10 @@
   - [x] Use different prompt for that.
 - [x] Handle infinite loops.
 - [x] Help command.
-- [ ] *Interactive mode with stepping by one instruction at a time*:
+- [x] *Interactive mode with stepping by one instruction at a time*:
   - [x] Change the old interactive mode to *auto print* mode.
   - [x] It is a toggle and you have to wait for complete loops as well.
-  - [ ] You can execute one instruction at a time.
+  - [x] You can execute one instruction at a time.
 
 ## Next phase - Compiler
 
