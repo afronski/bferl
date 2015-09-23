@@ -174,6 +174,17 @@ evaluate_code_internal_call(Code) ->
         exit:{timeout, _} -> {timeout, InterpreterStateBeforeEvaluation}
     end.
 
+next_step(true, State) ->
+    bferl_tools_interpreter:evaluate_code([]),
+
+    case maps:get("always_pretty_print_state", State) of
+        true -> pretty_print_state(State), ok;
+        _    -> ok
+    end;
+
+next_step(_, _) ->
+    nop.
+
 dispatch([$? | CommandName], State) ->
     {_, NewState} = Result = perform_repl_command(CommandName, State),
 
@@ -187,6 +198,7 @@ dispatch([$? | CommandName], State) ->
     end;
 
 dispatch([], State) ->
+    next_step(maps:get("debug_mode", State), State),
     {continue, State};
 
 dispatch(BrainfuckCode, State) ->

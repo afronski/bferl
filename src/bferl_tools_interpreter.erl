@@ -62,6 +62,31 @@ validate([]) ->
 validate([Head | Tail]) ->
     validation_rules(Head, Tail, 0).
 
+spawn_evaluator(State, Interpreter, PreviousCode, Code) ->
+    MessageRef = make_ref(),
+    Parent = self(),
+
+    Before = Interpreter#interpreter{instructions = PreviousCode ++ Code},
+    StepMode = maps:get("debug_mode", State),
+
+    {Pid, MonitorRef} = spawn_monitor(fun() ->
+        Result = case StepMode of
+            true ->
+                After = bferl_programming_language_logic:step(Before),
+                case After of
+                    end_of_program -> Before;
+                    _              -> After
+                end;
+
+            _ ->
+                bferl_programming_language_logic:run(Before)
+        end,
+
+        Parent ! {evaluated, MessageRef, Result}
+    end),
+
+    {Pid, MonitorRef, MessageRef}.
+
 init([]) ->
     State = #{"interpreter" => new_state(), "debug_mode" => false},
     {ok, State}.
@@ -102,15 +127,7 @@ handle_call({eval, Code}, _From, State) ->
             {reply, {more_tokens, ModifiedState}, State#{"interpreter" := ModifiedState}};
 
         valid ->
-            Before = Interpreter#interpreter{instructions = PreviousCode ++ Code},
-
-            MessageRef = make_ref(),
-            Parent = self(),
-
-            {Pid, MonitorRef} = spawn_monitor(fun() ->
-                Result = bferl_programming_language_logic:run(Before),
-                Parent ! {evaluated, MessageRef, Result}
-            end),
+            {Pid, MonitorRef, MessageRef} = spawn_evaluator(State, Interpreter, PreviousCode, Code),
 
             receive
                 {evaluated, MessageRef, After} ->
