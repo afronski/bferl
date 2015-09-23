@@ -1,17 +1,5 @@
 # TODO
 
-## Next phase - REPL improvements
-
-- [x] Run only properly balanced code fragments.
-  - [x] If only part of the loop delivered, wait until it will be complete.
-  - [x] Use different prompt for that.
-- [x] Handle infinite loops.
-- [x] Help command.
-- [x] *Interactive mode with stepping by one instruction at a time*:
-  - [x] Change the old interactive mode to *auto print* mode.
-  - [x] It is a toggle and you have to wait for complete loops as well.
-  - [x] You can execute one instruction at a time.
-
 ## Next phase - Compiler
 
 - [ ] Compiler:
