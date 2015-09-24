@@ -1,4 +1,4 @@
--module(bferl_codegen).
+-module(bferl_compiler_codegen).
 
 -export([ make_module/3 ]).
 

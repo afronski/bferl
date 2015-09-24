@@ -33,10 +33,10 @@ compile(Name, Program, Type, Flags) ->
         _          -> nop
     end,
 
-    {ok, Tokens, _} = bferl_lexer:string(Program),
-    {ok, Expressions} = bferl_parser:parse(Tokens),
+    {ok, Tokens, _} = bferl_compiler_lexer:string(Program),
+    {ok, Expressions} = bferl_compiler_parser:parse(Tokens),
 
-    {ok, CoreRepresentation} = bferl_codegen:make_module(Name, Expressions, Flags),
+    {ok, CoreRepresentation} = bferl_compiler_codegen:make_module(Name, Expressions, Flags),
 
     case proplists:lookup(pretty_print, Flags) of
         {pretty_print, _} ->
