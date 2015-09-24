@@ -2,6 +2,11 @@
 
 ## Internals
 
+- Leex
+- Yecc
+- Code generation.
+- Erlang, Core Erlang, BEAM, ...
+
 ## API
 
 - Compiling code from file - `bferl_app:compile_file("hello_world.bf").`
@@ -10,6 +15,7 @@
   - You can start it by typing `MODULE_NAME_AFTER_COMPILATION:start().`
   - If you would like to provide a *tape* with input characters you can do it by:
   - `MODULE_NAME_AFTER_COMPILATION:start("This is input tape content.").`
+- The same functions with `debug` flag.
 
 ### *Brainfork*
 
