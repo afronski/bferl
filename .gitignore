@@ -1,3 +1,9 @@
 # Binaries:
 _build/
+
+# Test binaries:
 test/*.beam
+
+# Generated code:
+src/bferl_lexer.erl
+src/bferl_parser.erl
