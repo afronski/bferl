@@ -5,5 +5,5 @@ _build/
 test/*.beam
 
 # Generated code:
-src/bferl_compiler_lexer.erl
-src/bferl_compiler_parser.erl
+src/bferl_compiler_lexer_*.erl
+src/bferl_compiler_parser_*.erl

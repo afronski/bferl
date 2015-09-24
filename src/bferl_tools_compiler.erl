@@ -1,6 +1,8 @@
 -module(bferl_tools_compiler).
 -behavior(gen_server).
 
+-include("../include/common_definitions.hrl").
+
 -export([ start_link/0,
           compile_and_load/2,
           compile_and_load/3 ]).
@@ -13,10 +15,10 @@ start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 compile_and_load(Program, Type) ->
-    gen_server:call({compile, Program, Type, []}, ?MODULE).
+    gen_server:call(?MODULE, {compile, Program, Type, []}).
 
 compile_and_load(Program, Type, Flags) ->
-    gen_server:call({compile, Program, Type, Flags}, ?MODULE).
+    gen_server:call(?MODULE, {compile, Program, Type, Flags}).
 
 create_module_name(State) ->
     EvaluationCounter = maps:get("evaluation_counter", State),
@@ -27,16 +29,22 @@ create_module_name(State) ->
 filename(Name) ->
     io_lib:format("~s.erl", [Name]).
 
+lex(Program, ?HUMAN_NAME_BF)  -> bferl_compiler_lexer_bf:string(Program);
+lex(Program, ?HUMAN_NAME_BFO) -> bferl_compiler_lexer_bfo:string(Program).
+
+parse(Tokens, ?HUMAN_NAME_BF)  -> bferl_compiler_parser_bf:parse(Tokens);
+parse(Tokens, ?HUMAN_NAME_BFO) -> bferl_compiler_parser_bfo:parse(Tokens).
+
 compile(Name, Program, Type, Flags) ->
     case proplists:lookup(debug, Flags) of
         {debug, _} -> io:format("LANGUAGE: ~s~n", [Type]);
         _          -> nop
     end,
 
-    {ok, Tokens, _} = bferl_compiler_lexer:string(Program),
-    {ok, Expressions} = bferl_compiler_parser:parse(Tokens),
+    {ok, Tokens, _} = lex(Program, Type),
+    {ok, Expressions} = parse(Tokens, Type),
 
-    {ok, CoreRepresentation} = bferl_compiler_codegen:make_module(Name, Expressions, Flags),
+    {ok, CoreRepresentation} = bferl_compiler_codegen:make_module(Name, Expressions, Type, Flags),
 
     case proplists:lookup(pretty_print, Flags) of
         {pretty_print, _} ->
