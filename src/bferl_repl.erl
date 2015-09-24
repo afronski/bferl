@@ -178,7 +178,10 @@ next_step(true, State) ->
     bferl_tools_interpreter:evaluate_code([]),
 
     case maps:get("always_pretty_print_state", State) of
-        true -> pretty_print_state(State), ok;
+        true ->
+            _ = pretty_print_state(State),
+            ok;
+
         _    -> ok
     end;
 
