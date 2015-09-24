@@ -22,7 +22,7 @@ compile_and_load(Program, Type, Flags) ->
 
 create_module_name(State) ->
     EvaluationCounter = maps:get("evaluation_counter", State),
-    Name = io_lib:format("evaluation_~B", [EvaluationCounter]),
+    Name = "evaluation_" ++ integer_to_list(EvaluationCounter),
 
     {Name, State#{"evaluation_counter" := EvaluationCounter + 1}}.
 
@@ -35,15 +35,10 @@ lex(Program, ?HUMAN_NAME_BFO) -> bferl_compiler_lexer_bfo:string(Program).
 parse(Tokens, ?HUMAN_NAME_BF)  -> bferl_compiler_parser_bf:parse(Tokens);
 parse(Tokens, ?HUMAN_NAME_BFO) -> bferl_compiler_parser_bfo:parse(Tokens).
 
-compile(Name, Program, Type, Flags) ->
-    case proplists:lookup(debug, Flags) of
-        {debug, _} -> io:format("LANGUAGE: ~s~n", [Type]);
-        _          -> nop
-    end,
+codegen({error, _}, Name, Type, Flags) ->
+    {error, [], syntax_error, [Name, Type, Flags]};
 
-    {ok, Tokens, _} = lex(Program, Type),
-    {ok, Expressions} = parse(Tokens, Type),
-
+codegen({ok, Expressions}, Name, Type, Flags) ->
     {ok, CoreRepresentation} = bferl_compiler_codegen:make_module(Name, Expressions, Type, Flags),
 
     case proplists:lookup(pretty_print, Flags) of
@@ -63,19 +58,30 @@ compile(Name, Program, Type, Flags) ->
             {ok, Beam};
 
         {ok, [{Name, Warnings}]} ->
-            {error, [], Warnings};
+            {error, [], Warnings, [Name, Type, Flags]};
 
         {error, [{Name, Errors}], [{Name, Warnings}]} ->
-            {error, Errors, Warnings}
+            {error, Errors, Warnings, [Name, Type, Flags]}
     end.
+
+compile(Name, Program, Type, Flags) ->
+    case proplists:lookup(debug, Flags) of
+        {debug, _} -> io:format("LANGUAGE: ~s~n", [Type]);
+        _          -> nop
+    end,
+
+    {ok, Tokens, _} = lex(Program, Type),
+    ParseResult = parse(Tokens, Type),
+
+    codegen(ParseResult, Name, Type, Flags).
 
 load(Name, Beam) ->
     code:load_binary(Name, filename(Name), Beam).
 
 compile_and_load(Name, Program, Type, Flags) ->
     case compile(Name, Program, Type, Flags) of
-        {ok, Beam}                -> load(Name, Beam);
-        {error, Errors, Warnings} -> {error, Errors, Warnings}
+        {ok, Beam}                      -> load(Name, Beam);
+        {error, Errors, Warnings, Meta} -> {error, Errors, Warnings, Meta}
     end.
 
 init([]) ->
