@@ -1,9 +1,12 @@
 -module(bferl_app).
 -behavior(application).
 
+-include("../include/common_definitions.hrl").
+
 -export([ attach_console/0 ]).
 -export([ run_file/1, run_code/1, repl/0,
           compile_file/1, compile_code/1,
+          compile_file/2, compile_code/2,
           run_file_on_vm/1, run_code_on_vm/1,
           run_file_on_vm/2, run_code_on_vm/2 ]).
 
@@ -14,6 +17,14 @@ start(_Type, _Args) ->
 
 stop(_State) ->
     ok.
+
+%% Private helpers.
+
+detect_type(Filename) ->
+    case filename:extension(Filename) of
+        ?BRAINFORK_EXTENSION -> ?HUMAN_NAME_BFO;
+        _                    -> ?HUMAN_NAME_BF
+    end.
 
 %% Invoke this directly from the shell.
 %% --
@@ -41,11 +52,23 @@ run_code(Code) ->
 repl() ->
     bferl_repl:start_loop().
 
-compile_file(_Filename) ->
-    not_implemented_yet.
+compile_file(Filename) ->
+    Program = bferl_tokenizer:from_file(Filename),
+    Type = detect_type(Filename),
+    bferl_tools_compiler:compile_and_load(Program, Type).
 
-compile_code(_Code) ->
-    not_implemented_yet.
+compile_file(Filename, debug) ->
+    Program = bferl_tokenizer:from_file(Filename),
+    Type = detect_type(Filename),
+    bferl_tools_compiler:compile_and_load(Program, Type, [debug, pretty_print]).
+
+compile_code(Code) ->
+    Program = bferl_tokenizer:from_string(Code),
+    bferl_tools_compiler:compile_and_load(Program, ?HUMAN_NAME_BF).
+
+compile_code(Code, debug) ->
+    Program = bferl_tokenizer:from_string(Code),
+    bferl_tools_compiler:compile_and_load(Program, ?HUMAN_NAME_BF, [debug, pretty_print]).
 
 run_file_on_vm(Filename) ->
     run_file_on_vm(Filename, []).
@@ -53,8 +76,10 @@ run_file_on_vm(Filename) ->
 run_code_on_vm(Code) ->
     run_code_on_vm(Code, []).
 
-run_file_on_vm(_Filename, _Flags) ->
+run_file_on_vm(Filename, _Flags) ->
+    _Type = detect_type(Filename),
     not_implemented_yet.
 
 run_code_on_vm(_Code, _Flags) ->
+    _Type = ?HUMAN_NAME_BF,
     not_implemented_yet.
