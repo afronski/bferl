@@ -4,10 +4,11 @@
 
 - [x] Compiler facility.
 - [x] Helpers for showing transpiled representation and type of the program.
-- [ ] Lexer, Parser and Code Generation.
-  - [ ] Verify that loops are closed during compilation.
-- [ ] Compiling source to the *Core Erlang* representation.
-  - [ ] Compile it to the single function inside module with *fixed* structure.
+- [x] Lexer and Parser.
+  - [x] Verify that loops are closed during compilation.
+- [ ] Code Generation
+  - [ ] Compiling source to the *Core Erlang* representation.
+    - [ ] Compile it to the single function inside module with *fixed* structure.
 - [ ] Fixing `dialyzer` errors.
 
 ## Next phase - Virtual Machine
