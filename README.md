@@ -50,5 +50,5 @@ Interested in more? Dive into one of these pages:
 
 - [Architecture](/docs/Architecture.md) - General overview and Architecture documentation.
 - [REPL](/docs/REPL.md) - Description of *REPL* and *Interpreter* subsystem.
-- [BEAM Compiler](/docs/Compiler.md) - Description of the *Compiler* subsystem.
+- [Compiler](/docs/Compiler.md) - Description of the *Compiler* subsystem (targetting *Core Erlang*).
 - [Virtual Machine](/docs/VirtualMachine.md) - Description of the *Virtual Machine* subsystem.
