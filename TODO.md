@@ -10,8 +10,8 @@
   - [x] Compiling source to the *Core Erlang* representation.
     - [x] Compile it to the single function inside module with *fixed* structure.
   - [x] Compiling code in `debug` and `release` modes.
-  - [ ] Change execution mechanism to `lists:foldl/3`.
-  - [ ] Create state tuple in `build_state/1`.
+  - [x] Change execution mechanism to `lists:foldl/3`.
+  - [x] Create state tuple in `build_state/1` and return `IC` afterwards.
   - [ ] Language logic implemented in *Core Erlang*.
 
 ## Next phase - Virtual Machine
@@ -43,7 +43,7 @@
 
 ## Next phase - Improvements
 
-- [ ] Fix all *dialyzer* errors.
-- [ ] Find way to exclude Lexer / Parser includes from analysis.
+- [ ] Find way to exclude Lexer / Parser includes from *dialyzer* analysis.
+- [ ] Fix all *dialyzer* errors related to project.
 - [ ] *REPL* and Interpreter - Detecting infinite loop based on IC observation.
 - [ ] Compiler - Optimization segment.

@@ -20,6 +20,14 @@ But each of them is an ideal candidate to learn how to write by yourself an *int
     - See the documentation for more examples.
 5. If you would like to run tests, invoke command: `rebar3 ct`.
 
+### Support
+
+Supported and tested on:
+
+- *Erlang 17.5*
+- *Erlang 18.0*
+- *Erlang 18.1*
+
 ## Quick Example
 
 If you want to start quickly, here you have an example program which adds two digits (represented as an `ASCII` character) and display result of that operation:
