@@ -6,10 +6,13 @@
 - [x] Helpers for showing transpiled representation and type of the program.
 - [x] Lexer and Parser.
   - [x] Verify that loops are closed during compilation.
-- [ ] Code Generation
-  - [ ] Compiling source to the *Core Erlang* representation.
-    - [ ] Compile it to the single function inside module with *fixed* structure.
-- [ ] Fixing `dialyzer` errors.
+- [x] Code Generation
+  - [x] Compiling source to the *Core Erlang* representation.
+    - [x] Compile it to the single function inside module with *fixed* structure.
+  - [x] Compiling code in `debug` and `release` modes.
+  - [ ] Change execution mechanism to `lists:foldl/3`.
+  - [ ] Create state tuple in `build_state/1`.
+  - [ ] Language logic implemented in *Core Erlang*.
 
 ## Next phase - Virtual Machine
 
@@ -29,3 +32,18 @@
   - [x] Code provided as a string should be always interpreted as a *Brainfuck*.
   - [ ] For VM - fork uses new *VM* process with cloned state.
   - [ ] For Compiler - fork should `spawn_link` a new process with logic and its own memory.
+
+## Next phase - Documentation
+
+- [ ] Documentation:
+  - [ ] REPL and Interpreter.
+  - [ ] Compiler internals and *Core Erlang* description.
+  - [ ] *Virtual Machine* and implemented optimizations.
+  - [ ] *Brainfork* internals.
+
+## Next phase - Improvements
+
+- [ ] Fix all *dialyzer* errors.
+- [ ] Find way to exclude Lexer / Parser includes from analysis.
+- [ ] *REPL* and Interpreter - Detecting infinite loop based on IC observation.
+- [ ] Compiler - Optimization segment.
