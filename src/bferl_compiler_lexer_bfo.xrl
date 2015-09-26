@@ -3,20 +3,19 @@ Definitions.
 NO_OPCODE = [^,\.\[\]<>\+\-Y]
 
 Rules.
+\+ : {token, {inc, TokenLine, list_to_existing_atom(TokenChars)}}.
+\- : {token, {dec, TokenLine, list_to_existing_atom(TokenChars)}}.
 
-\+ : {token, {inc, TokenChars}}.
-\- : {token, {dec, TokenChars}}.
+<  : {token, {left, TokenLine, list_to_existing_atom(TokenChars)}}.
+>  : {token, {right, TokenLine, list_to_existing_atom(TokenChars)}}.
 
-<  : {token, {left, TokenChars}}.
->  : {token, {right, TokenChars}}.
+\[ : {token, {start_loop, TokenLine, list_to_existing_atom(TokenChars)}}.
+\] : {token, {end_loop, TokenLine, list_to_existing_atom(TokenChars)}}.
 
-\[ : {token, {start_loop, TokenChars}}.
-\] : {token, {end_loop, TokenChars}}.
+,  : {token, {in, TokenLine, list_to_existing_atom(TokenChars)}}.
+\. : {token, {out, TokenLine, list_to_existing_atom(TokenChars)}}.
 
-,  : {token, {in, TokenChars}}.
-\. : {token, {out, TokenChars}}.
-
-Y  : {token, {fork, TokenChars}}.
+Y  : {token, {fork, TokenLine, list_to_existing_atom(TokenChars)}}.
 
 {NO_OPCODE}+ : skip_token.
 
