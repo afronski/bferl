@@ -16,11 +16,7 @@ map_opcode(end_loop)   -> "]";
 
 map_opcode(fork)       -> "Y".
 
-print_opcodes_in_debug(Opcode, Flags) ->
-    case proplists:lookup(debug, Flags) of
-        {debug, _} -> io:format("~1s", [map_opcode(Opcode)]);
-        none       -> nop
-    end.
+print_opcode(Opcode)   -> io:format("~1s", [map_opcode(Opcode)]).
 
 %% We need to replicate `module_info/{0,1}` functions
 %% because they are delivered to the Core Erlang representation.
@@ -133,6 +129,7 @@ codegen_brainfuck(Program, Mode, Flags) ->
 
         {cerl:c_fname(inc_ip, 1), cerl:c_fun([In], In)},
         {cerl:c_fname(inc_ic, 1), cerl:c_fun([In], In)},
+        {cerl:c_fname(inc_mp, 1), cerl:c_fun([In], In)},
 
         {cerl:c_fname(inc, 1), cerl:c_fun([In], In)},
         {cerl:c_fname(dec, 1), cerl:c_fun([In], In)},
@@ -167,20 +164,14 @@ build(ParsedProgram, Input, Flags) ->
     Mode = case proplists:lookup(debug, Flags) of
         {debug, _} ->
             io:format("--PROCEEDED-TOKENS-------------------~n  ", []),
-            lists:foreach(fun(Opcode) -> print_opcodes_in_debug(Opcode, Flags) end, ParsedProgram),
+            lists:foreach(fun(Opcode) -> print_opcode(Opcode) end, ParsedProgram),
+            io:format("~n", []),
             debug;
 
         none -> release
     end,
 
-    Result = codegen_main(Input),
-
-    case proplists:lookup(debug, Flags) of
-        {debug, _} -> io:format("~n", []);
-        none       -> nop
-    end,
-
-    {Result, Mode}.
+    {codegen_main(Input), Mode}.
 
 codegen_module(Name, ParsedProgram, Type, Flags) ->
     ModuleName = cerl:c_atom(Name),
