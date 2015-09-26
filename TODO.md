@@ -36,14 +36,16 @@
 ## Next phase - Documentation
 
 - [ ] Documentation:
-  - [ ] REPL and Interpreter.
-  - [ ] Compiler internals and *Core Erlang* description.
+  - [ ] *REPL* and *Interpreter*.
+  - [ ] *Compiler* internals and *Core Erlang* description.
   - [ ] *Virtual Machine* and implemented optimizations.
   - [ ] *Brainfork* internals.
 
 ## Next phase - Improvements
 
-- [ ] Find way to exclude Lexer / Parser includes from *dialyzer* analysis.
-- [ ] Fix all *dialyzer* errors related to project.
-- [ ] *REPL* and Interpreter - Detecting infinite loop based on IC observation.
-- [ ] Compiler - Optimization segment.
+- [ ] *Dialyzer*:
+  - [ ] Find way to exclude Lexer / Parser includes from *dialyzer* analysis.
+  - [ ] Fix all *dialyzer* errors related to project.
+- [ ] Improvements:
+  - [ ] *REPL* and *Interpreter* - Detecting infinite loop based on IC observation.
+  - [ ] *Compiler* - Optimization stage.
