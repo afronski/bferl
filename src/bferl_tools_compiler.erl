@@ -27,7 +27,7 @@ create_module_name(State) ->
     {Name, State#{"evaluation_counter" := EvaluationCounter + 1}}.
 
 filename(Name) ->
-    io_lib:format("~s.erl", [Name]).
+    Name ++ ".erl".
 
 lex(Program, ?HUMAN_NAME_BF)  -> bferl_compiler_lexer_bf:string(Program);
 lex(Program, ?HUMAN_NAME_BFO) -> bferl_compiler_lexer_bfo:string(Program).
@@ -43,31 +43,41 @@ codegen({ok, Expressions}, Name, Type, Flags) ->
 
     case proplists:lookup(pretty_print, Flags) of
         {pretty_print, _} ->
-            io:format("--PRETTY-PRINT-----------------------~n~n", []),
-            io:format("  * Core representation: ~n~n            ", []),
-            io:format("      ~s~n~n                             ", [ core_pp:format(CoreRepresentation) ]),
-            io:format("-------------------------------------~n  ", []);
+            io:format("--CORE-ERLANG-PRETTY-PRINT-----------~n~n", []),
+            io:format("~s~n~n", [ core_pp:format(CoreRepresentation) ]);
 
-       _ -> nop
+        _ -> nop
     end,
 
+    AtomName = list_to_existing_atom(Name),
+
     case core_lint:module(CoreRepresentation) of
-        {ok, [{Name, []}]} ->
+        {ok, [{AtomName, []}]} ->
+            case proplists:lookup(debug, Flags) of
+                {debug, _} -> io:format("--VALIDATION: SUCCESS----------------~n", []);
+                _          -> nop
+            end,
+
             File = filename(Name),
             {ok, _, Beam} = compile:forms(CoreRepresentation, [binary, from_core, return_errors, {source, File}]),
             {ok, Beam};
 
-        {ok, [{Name, Warnings}]} ->
+        {ok, [{AtomName, Warnings}]} ->
             {error, [], Warnings, [Name, Type, Flags]};
 
-        {error, [{Name, Errors}], [{Name, Warnings}]} ->
+        {error, [{AtomName, Errors}], [{AtomName, Warnings}]} ->
             {error, Errors, Warnings, [Name, Type, Flags]}
     end.
 
 compile(Name, Program, Type, Flags) ->
     case proplists:lookup(debug, Flags) of
-        {debug, _} -> io:format("LANGUAGE: ~s~n", [Type]);
-        _          -> nop
+        {debug, _} ->
+            io:format("--LANGUAGE---------------------------~n", []),
+            io:format("  ~s~n", [Type]),
+            io:format("--FLAGS------------------------------~n", []),
+            io:format("  ~p~n", [Flags]);
+
+        _ -> nop
     end,
 
     {ok, Tokens, _} = lex(Program, Type),
@@ -76,7 +86,8 @@ compile(Name, Program, Type, Flags) ->
     codegen(ParseResult, Name, Type, Flags).
 
 load(Name, Beam) ->
-    code:load_binary(Name, filename(Name), Beam).
+    AtomName = list_to_existing_atom(Name),
+    code:load_binary(AtomName, filename(Name), Beam).
 
 compile_and_load(Name, Program, Type, Flags) ->
     case compile(Name, Program, Type, Flags) of
