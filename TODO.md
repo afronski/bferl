@@ -36,8 +36,10 @@
 ## Next phase - Documentation
 
 - [ ] Documentation:
-  - [ ] *REPL* and *Interpreter*.
+  - [x] *Architecture* and overview documentation.
+  - [x] *REPL* and *Interpreter*.
   - [ ] *Compiler* internals and *Core Erlang* description.
+  - [x] *Brainfork* annotations.
   - [ ] *Virtual Machine* and implemented optimizations.
   - [ ] *Brainfork* internals.
 
