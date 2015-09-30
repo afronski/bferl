@@ -18,7 +18,9 @@ But each of them is an ideal candidate to learn how to write by yourself an *int
   - `bferl_app:attach_console().`
   - Now you can play with all kind of *Brainfuck* / *Brainfork* programs!
     - See the documentation for more examples.
-5. If you would like to run tests, invoke command: `rebar3 ct`.
+5. During development, you will probably need:
+  - To run tests, by invoking command: `rebar3 ct`
+  - To perform a *Dialyzer* analysis, by invoking command: `rebar3 dialyzer`
 
 ### Support
 
@@ -30,7 +32,7 @@ Supported and tested on:
 
 ## Quick Example
 
-If you want to start quickly, here you have an example program which adds two digits (represented as an `ASCII` character) and display result of that operation:
+If you want to start playing without any hassle, here you have an example program which adds two digits (represented as `ASCII` characters) and display result of that operation:
 
 ```erlang
 1> bferl_app:run_code(",>++++++[<-------->-],[<+>-]<.").
@@ -46,9 +48,9 @@ As a result of the invocation we returned the internal state of the *interpreter
 
 ## Documentation
 
-Interested in more? Dive into one of these pages:
+Interested in more? Dive into one of those pages:
 
-- [Architecture](/docs/Architecture.md) - General overview and Architecture documentation.
-- [REPL](/docs/REPL.md) - Description of *REPL* and *Interpreter* subsystem.
-- [Compiler](/docs/Compiler.md) - Description of the *Compiler* subsystem (targetting *Core Erlang*).
+- [Architecture](/docs/Architecture.md) - General overview and *architecture* documentation.
+- [REPL](/docs/REPL.md) - Description of *REPL* and *Interpreter* subsystems.
+- [Compiler](/docs/Compiler.md) - Description of the *Compiler* subsystem (compilation to *Core Erlang* representation).
 - [Virtual Machine](/docs/VirtualMachine.md) - Description of the *Virtual Machine* subsystem.
