@@ -76,10 +76,10 @@ run_file_on_vm(Filename) ->
 run_code_on_vm(Code) ->
     run_code_on_vm(Code, []).
 
-run_file_on_vm(Filename, _Flags) ->
+run_file_on_vm(Filename, debug) ->
     _Type = detect_type(Filename),
     not_implemented_yet.
 
-run_code_on_vm(_Code, _Flags) ->
+run_code_on_vm(_Code, debug) ->
     _Type = ?HUMAN_NAME_BF,
     not_implemented_yet.
