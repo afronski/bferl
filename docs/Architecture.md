@@ -12,7 +12,7 @@ Tools and *I/O* subsystem have a different supervisors in order differentiate re
 
 ## Common Facilities
 
-Besides subsystems and *OTP* specific processes, we have also other modules with different responsibilities:
+Besides subsystems and *OTP* specific processes, we have available also other modules with different responsibilities:
 
 - `bferl_types` which contains predefined, internal type specifications.
 - `bferl_tokenizer` which is responsible for splitting *Brainfuck* / *Brainfork* code into single tokens.
@@ -20,7 +20,7 @@ Besides subsystems and *OTP* specific processes, we have also other modules with
 
 #### Internal Data Structure
 
-Last module from the previous section, introduces a new data structure which is an *internal state* representation of *interpreter*. In our case it is defined as a record with name `interpreter`. It is defined in `include/interpreter_definitions.hrl`.
+Last module from the previous section introduces a new data structure which is an *internal state* of an *interpreter*. In our case it is defined as a record with name `interpreter` (it is defined in `include/interpreter_definitions.hrl`). Let's look at the definition:
 
 ```erlang
 -record(
@@ -46,7 +46,7 @@ Inside this record we have:
 - actual position in memory (inside `memory_pointer` field),
 - and memory representation (inside `memory` field).
 
-Types attached to the record will help you deduce which values are valid for each field. By default `interpreter` memory is initialized with zeros and it has maximum size of 30000 memory cells.
+Types attached to the record will help you deduce which values are valid for each field. By default `interpreter` memory is initialized with zeros and it has maximum size of 30000 memory cells. Each memory cell is an *Erlang* number.
 
 Below you can see *pretty printed* record representation:
 
@@ -79,9 +79,9 @@ Trained eye will spot an *Erlang* `array` representation in the last field.
 
 ## Subsystems
 
-As it is stated above, whole application is split into multiple subsystems. We will describe them one by one in this section.
+As it is stated above, whole application is split into multiple subsystems. We will describe them one by one in this section. If you are interested in internals of *Brainfork*, you can find them [here](/docs/Brainfork.md).
 
-### Interpreter and REPL
+### *Interpreter* and *REPL*
 
 First tool delivered with the `bferl_app` is the *interpreter*, together with a *REPL* functionality.
 
@@ -90,7 +90,7 @@ You can evaluate code delivered as a file or string, with these commands:
 - `bferl_app:run_file("./hello_world.bf").` or `bferl_app:run_code("[-]").`.
   - Interpreter does not support *Brainfork* code.
 
-Also, you can start a REPL by invoking the following command:
+Also, you can start a *REPL* by invoking the following command:
 
 - `bferl_app:repl().`
   - After that your prompt will change and you can start playing with *REPL* abilities.
@@ -111,8 +111,10 @@ How to compile a program? You can do it by invoking these commands in the shell:
 
 After invoking those commands (with a valid program) it will produce a *BEAM* module which will be automatically loaded after successful compilation into the current shell session. Prepared module has two exported functions which are the *starting points*:
 
-- `MODULE_NAME:start/0` - which starts program with console attached as an I/O subsystem. As a result it will return amount of instructions executed during the program run.
-- `MODULE_NAME:start/1` - which starts program with I/O subsystem represented as a tape (you are providing an input tape as an argument). The output tape, together with counter described above, will be returned as a result of the program execution.
+- `MODULE_NAME:start/0` - which starts program with console attached as an I/O subsystem.
+  - As a result it will return amount of instructions executed during the program run.
+- `MODULE_NAME:start/1` - which starts program with I/O subsystem represented as a tape, but you are providing **only** an input tape as an argument.
+  - Output will be printed out on the console and result of the program execution is the same as in the example above.
 
 Now you can invoke your program with one of the starting points.
 

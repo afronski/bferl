@@ -35,13 +35,20 @@
 
 ## Next phase - Documentation
 
-- [ ] Documentation:
-  - [x] *Architecture* and overview documentation.
-  - [x] *REPL* and *Interpreter*.
-  - [ ] *Compiler* internals and *Core Erlang* description.
-  - [x] *Brainfork* annotations.
-  - [ ] *Virtual Machine* and implemented optimizations.
-  - [ ] *Brainfork* internals.
+- [x] *README* review.
+- [x] *Architecture* overview.
+- [ ] *REPL* and *Interpreter* overview.
+- [ ] *REPL* and *Interpreter* internals.
+  - [ ] Example session
+- [ ] *Compiler* overview.
+- [ ] *Compiler* internals.
+  - [ ] Example session
+- [ ] *Virtual Machine* overview.
+- [ ] *Virtual Machine* internals.
+  - [ ] Example session
+- [x] *Brainfork* overview.
+- [ ] *Brainfork* internals.
+  - [ ] Example session
 
 ## Next phase - Improvements
 
@@ -49,5 +56,5 @@
   - [ ] Find way to exclude Lexer / Parser includes from *dialyzer* analysis.
   - [ ] Fix all *dialyzer* errors related to project.
 - [ ] Improvements:
-  - [ ] *REPL* and *Interpreter* - Detecting infinite loop based on IC observation.
+  - [ ] *REPL* and *Interpreter* - Detecting infinite loop based on *IC* observation.
   - [ ] *Compiler* - Optimization stage.
