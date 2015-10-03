@@ -26,8 +26,7 @@ local_call(Name, Arity, Args) when is_atom(Name), is_integer(Arity), is_list(Arg
 call(Module, Name, Args) when is_atom(Module), is_atom(Name), is_list(Args) ->
     cerl:c_call(cerl:c_atom(Module), cerl:c_atom(Name), Args).
 
-chain(In, Operations) ->
-    [H | T] = lists:reverse(Operations),
+chain(In, [H | T]) ->
     chain_composition(H, T, In, 0).
 
 chain_composition(F, [], Prev, _Level) -> F(Prev);
@@ -160,7 +159,7 @@ codegen_print(In) ->
 
     TapeCodeGen = codegen_get(7, In),
 
-    PointersPrint = [cerl:c_string("~n[DEBUG] POINTERS: IC: ~2B IP: ~2B MP: ~2B~n"), cerl:make_list(Pointers)],
+    PointersPrint = [cerl:c_string("~n[DEBUG] POINTERS: IC:~3B IP:~3B MP:~3B~n"), cerl:make_list(Pointers)],
     MemoryPrint   = [cerl:c_string("        MEMORY:  ~3B ~3B (~3B) ~3B ~3B~n"), cerl:make_list(Memory)],
     ProgramPrint  = [cerl:c_string("        PROGRAM:   ~1c   ~1c (  ~1c)   ~1c   ~1c~n"), cerl:make_list(Program)],
     InputPrint    = [cerl:c_string("        INPUT:    ~p~n"), cerl:make_list([TapeCodeGen])],
@@ -196,9 +195,8 @@ codegen_deferred_application(Instruction, release) ->
 
 codegen_deferred_application(Instruction, debug) ->
     StateIn = cerl:c_var('StateIn'),
-
-    DebugPrint = [cerl:c_fun([StateIn], local_call(print, 1, [StateIn]))],
-    [codegen_deferred_application(Instruction, release)] ++ DebugPrint.
+    cerl:c_fun([StateIn], chain(StateIn, [ fun(S) -> local_call(Instruction, 1, [S]) end,
+                                           fun(S) -> local_call(print, 1, [S]) end ])).
 
 codegen_state(Program, StringifiedCode, release, In) ->
     Memory = cerl:c_var('Memory'),
@@ -300,8 +298,11 @@ codegen_find_bracket(Element, Acc) ->
 
 codegen_goto_end(IP, Code) ->
     ProgramLength = cerl:c_var('ProgramLength'),
+
     SubProgram = cerl:c_var('SubProgram'),
     SubProgramWithIndexes = cerl:c_var('SubProgramWithIndexes'),
+
+    Result = cerl:c_var('Result'),
     NewIP = cerl:c_var('NewIP'),
 
     cerl:c_let(
@@ -312,13 +313,17 @@ codegen_goto_end(IP, Code) ->
             call(lists, sublist, [Code, call(erlang, '+', [IP, cerl:c_int(1)]), ProgramLength]),
             cerl:c_let(
                 [SubProgramWithIndexes],
-                call(lists, zip, [SubProgram, call(lists, seq, [cerl:c_int(1), ProgramLength])]),
+                call(lists, zip, [SubProgram, call(lists, seq, [cerl:c_int(1), call(erlang, length, [SubProgram])])]),
                 cerl:c_let(
-                    [NewIP],
+                    [Result],
                     call(lists, foldl, [ cerl:c_fname(find_bracket, 2),
                                          cerl:c_tuple([cerl:c_int(-1), cerl:c_int(0)]),
                                          SubProgramWithIndexes ]),
-                    call(erlang, '+', [NewIP, cerl:c_int(1)])
+                    cerl:c_let(
+                        [NewIP],
+                        codegen_get(1, Result),
+                        call(erlang, '+', [NewIP, cerl:c_int(1)])
+                    )
                 )
             )
         )
@@ -483,7 +488,8 @@ codegen_test(In) ->
 
     Stack = cerl:c_var('Stack'),
     IP = cerl:c_var('IP'),
-    NewIP = cerl:c_var('IP'),
+    Offset = cerl:c_var('Offset'),
+    NewIP = cerl:c_var('NewIP'),
 
     NewStack = cerl:c_var('NewStack'),
 
@@ -514,9 +520,13 @@ codegen_test(In) ->
                                       [Program],
                                       codegen_get(8, StateWithModifiedStack),
                                       cerl:c_let(
-                                          [NewIP],
+                                          [Offset],
                                           local_call(goto_end, 2, [IP, Program]),
-                                          codegen_set(2, NewIP, StateWithModifiedStack)
+                                          cerl:c_let(
+                                              [NewIP],
+                                              call(erlang, '+', [IP, Offset]),
+                                              codegen_set(2, NewIP, StateWithModifiedStack)
+                                          )
                                       )
                                   )
                               )
@@ -584,33 +594,64 @@ codegen_ret(In) ->
 
 %% Execution and libraries.
 
-codegen_execute(In) ->
-    State = cerl:c_var('State'),
-    Final = cerl:c_var('Final'),
+codegen_step(State) ->
+    Program = cerl:c_var('Program'),
+    ProgramLength = cerl:c_var('ProgramLength'),
 
+    IP = cerl:c_var('IP'),
+    Current = cerl:c_var('Current'),
+
+    After = cerl:c_var('After'),
+
+    cerl:c_let(
+        [Program],
+        codegen_get(3, State),
+        cerl:c_let(
+            [ProgramLength],
+            call(erlang, length, [Program]),
+            cerl:c_let(
+                [IP],
+                codegen_get(2, State),
+                cerl:c_case(
+                    call(erlang, '>', [IP, ProgramLength]),
+                    [
+                      cerl:c_clause(
+                          [cerl:c_atom(true)],
+                          State
+                      ),
+
+                      cerl:c_clause(
+                          [cerl:c_atom(false)],
+                          cerl:c_let(
+                              [Current],
+                              call(lists, nth, [IP, Program]),
+                              cerl:c_let(
+                                  [After],
+                                  cerl:c_apply(Current, [State]),
+                                  local_call(step, 1, [After])
+                              )
+                          )
+                      )
+                    ]
+                )
+            )
+        )
+    ).
+
+codegen_execute(In) ->
+    InitialState = cerl:c_var('InitialState'),
+    After = cerl:c_var('After'),
     Result = cerl:c_var('Result'),
 
-    Element = cerl:c_var('Element'),
-    In = cerl:c_var('In'),
-
-    Program = cerl:c_var('Program'),
-
-    Step = cerl:c_fun([Element, In], cerl:c_apply(Element, [In])),
-
-    %% TODO: `lists:foldl` will only execute code linearly, without looping :(
     cerl:c_let(
-        [State],
+        [InitialState],
         local_call(build_state, 1, [In]),
         cerl:c_let(
-            [Final],
-            cerl:c_let(
-                [Program],
-                call(erlang, element, [cerl:c_int(3), State]),
-                call(lists, foldl, [Step, State, Program])
-            ),
+            [After],
+            local_call(step, 1, [InitialState]),
             cerl:c_let(
                 [Result],
-                call(erlang, element, [cerl:c_int(1), Final]),
+                call(erlang, element, [cerl:c_int(1), After]),
                 cerl:c_seq(
                     call(io, nl, []),
                     cerl:c_tuple([cerl:c_atom(executed_instructions), Result])
@@ -619,7 +660,7 @@ codegen_execute(In) ->
         )
     ).
 
-ops() ->
+def() ->
     [ fun(S) -> local_call(inc_ip, 1, [S]) end,
       fun(S) -> local_call(inc_ic, 1, [S]) end ].
 
@@ -635,6 +676,7 @@ codegen_brainfuck(Program, Mode, Flags) ->
     DebugFunctions ++ [
         {cerl:c_fname(build_state, 1), cerl:c_fun([In], codegen_new_state(Program, Mode, In))},
 
+        {cerl:c_fname(step, 1), cerl:c_fun([In], codegen_step(In))},
         {cerl:c_fname(execute, 1), cerl:c_fun([In], codegen_execute(In))},
 
         {cerl:c_fname(get_ic, 1), cerl:c_fun([In], codegen_get(1, In))},
@@ -666,14 +708,14 @@ codegen_brainfuck(Program, Mode, Flags) ->
 
         %% Opcodes.
 
-        {cerl:c_fname(left, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(dec_mp, 1, [S]) end ] ++ ops()))},
-        {cerl:c_fname(right, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(inc_mp, 1, [S]) end ] ++ ops()))},
+        {cerl:c_fname(left, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(dec_mp, 1, [S]) end ] ++ def()))},
+        {cerl:c_fname(right, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(inc_mp, 1, [S]) end ] ++ def()))},
 
-        {cerl:c_fname(inc, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(inc_memory, 1, [S]) end ] ++ ops()))},
-        {cerl:c_fname(dec, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(dec_memory, 1, [S]) end ] ++ ops()))},
+        {cerl:c_fname(inc, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(inc_memory, 1, [S]) end ] ++ def()))},
+        {cerl:c_fname(dec, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(dec_memory, 1, [S]) end ] ++ def()))},
 
-        {cerl:c_fname(in, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(getc, 1, [S]) end ] ++ ops()))},
-        {cerl:c_fname(out, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(putc, 1, [S]) end ] ++ ops()))},
+        {cerl:c_fname(in, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(getc, 1, [S]) end ] ++ def()))},
+        {cerl:c_fname(out, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(putc, 1, [S]) end ] ++ def()))},
 
         {cerl:c_fname(start_loop, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(test, 1, [S]) end,
                                                                    fun(S) -> local_call(inc_ic, 1, [S]) end ]))},
@@ -684,7 +726,7 @@ codegen_brainfuck(Program, Mode, Flags) ->
 codegen_brainfork() ->
     In = cerl:c_var('In'),
 
-    [{cerl:c_fname(fork, 1), cerl:c_fun([In], chain(In, ops()))}].
+    [{cerl:c_fname(fork, 1), cerl:c_fun([In], chain(In, def()))}].
 
 codegen_language_library(Program, Mode, ?HUMAN_NAME_BF, Flags) ->
     codegen_brainfuck(Program, Mode, Flags);
