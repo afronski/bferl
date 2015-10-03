@@ -46,7 +46,7 @@ codegen_module_info(ModuleName) ->
 
 codegen_get(N, In) ->
     Args = [cerl:c_int(N), In],
-    cerl:c_call(cerl:c_atom(erlang), cerl:c_atom(element), Args).
+    call(erlang, element, Args).
 
 codegen_safe_list_nth(In, Offset) ->
     Program = cerl:c_var('Program'),
@@ -62,19 +62,19 @@ codegen_safe_list_nth(In, Offset) ->
             call(erlang, length, [Program]),
             cerl:c_let(
                 [IP],
-                cerl:c_apply(cerl:c_fname(get_ip, 1), [In]),
+                local_call(get_ip, 1, [In]),
                 cerl:c_let(
                     [Position],
-                    cerl:c_call(cerl:c_atom(erlang), cerl:c_atom('+'), [IP, Offset]),
+                    call(erlang, '+', [IP, Offset]),
                     cerl:c_case(
-                        cerl:c_call(cerl:c_atom(erlang), cerl:c_atom('<'), [Position, cerl:c_int(1)]),
+                        call(erlang, '<', [Position, cerl:c_int(1)]),
                         [ cerl:c_clause([cerl:c_atom(true)], cerl:c_char(32)),
                           cerl:c_clause([cerl:c_atom(false)],
                               cerl:c_case(
-                                  cerl:c_call(cerl:c_atom(erlang), cerl:c_atom('>'), [Position, ProgramLength]),
+                                  call(erlang, '>', [Position, ProgramLength]),
                                   [ cerl:c_clause([cerl:c_atom(true)], cerl:c_char(32)),
                                     cerl:c_clause([cerl:c_atom(false)],
-                                        cerl:c_call(cerl:c_atom(lists), cerl:c_atom(nth), [Position, Program])
+                                        call(lists, nth, [Position, Program])
                                     )
                                   ]
                               )
@@ -97,22 +97,22 @@ codegen_safe_array_get(In, Offset) ->
         codegen_get(5, In),
         cerl:c_let(
             [MemoryLength],
-            cerl:c_call(cerl:c_atom(array), cerl:c_atom(size), [Memory]),
+            call(array, size, [Memory]),
             cerl:c_let(
                 [MP],
-                cerl:c_apply(cerl:c_fname(get_mp, 1), [In]),
+                local_call(get_mp, 1, [In]),
                 cerl:c_let(
                     [Position],
-                    cerl:c_call(cerl:c_atom(erlang), cerl:c_atom('+'), [MP, Offset]),
+                    call(erlang, '+', [MP, Offset]),
                     cerl:c_case(
-                        cerl:c_call(cerl:c_atom(erlang), cerl:c_atom('<'), [Position, cerl:c_int(0)]),
+                        call(erlang, '<', [Position, cerl:c_int(0)]),
                         [ cerl:c_clause([cerl:c_atom(true)], cerl:c_int(0)),
                           cerl:c_clause([cerl:c_atom(false)],
                               cerl:c_case(
-                                  cerl:c_call(cerl:c_atom(erlang), cerl:c_atom('>'), [Position, MemoryLength]),
+                                  call(erlang, '>', [Position, MemoryLength]),
                                   [ cerl:c_clause([cerl:c_atom(true)], cerl:c_int(0)),
                                     cerl:c_clause([cerl:c_atom(false)],
-                                        cerl:c_call(cerl:c_atom(array), cerl:c_atom(get), [Position, Memory])
+                                        call(array, get, [Position, Memory])
                                     )
                                   ]
                               )
@@ -128,25 +128,25 @@ codegen_safe_array_get(In, Offset) ->
 
 codegen_print(In) ->
     Pointers = [
-        cerl:c_apply(cerl:c_fname(get_ic, 1), [In]),
-        cerl:c_apply(cerl:c_fname(get_ip, 1), [In]),
-        cerl:c_apply(cerl:c_fname(get_mp, 1), [In])
+        local_call(get_ic, 1, [In]),
+        local_call(get_ip, 1, [In]),
+        local_call(get_mp, 1, [In])
     ],
 
     Memory = [
-        cerl:c_apply(cerl:c_fname(get_memory_offset, 2), [In, cerl:c_int(-2)]),
-        cerl:c_apply(cerl:c_fname(get_memory_offset, 2), [In, cerl:c_int(-1)]),
-        cerl:c_apply(cerl:c_fname(get_memory_offset, 2), [In, cerl:c_int( 0)]),
-        cerl:c_apply(cerl:c_fname(get_memory_offset, 2), [In, cerl:c_int(+1)]),
-        cerl:c_apply(cerl:c_fname(get_memory_offset, 2), [In, cerl:c_int(+2)])
+        local_call(get_memory_offset, 2, [In, cerl:c_int(-2)]),
+        local_call(get_memory_offset, 2, [In, cerl:c_int(-1)]),
+        local_call(get_memory_offset, 2, [In, cerl:c_int( 0)]),
+        local_call(get_memory_offset, 2, [In, cerl:c_int(+1)]),
+        local_call(get_memory_offset, 2, [In, cerl:c_int(+2)])
     ],
 
     Program = [
-        cerl:c_apply(cerl:c_fname(get_program_offset, 2), [In, cerl:c_int(-2)]),
-        cerl:c_apply(cerl:c_fname(get_program_offset, 2), [In, cerl:c_int(-1)]),
-        cerl:c_apply(cerl:c_fname(get_program_offset, 2), [In, cerl:c_int( 0)]),
-        cerl:c_apply(cerl:c_fname(get_program_offset, 2), [In, cerl:c_int(+1)]),
-        cerl:c_apply(cerl:c_fname(get_program_offset, 2), [In, cerl:c_int(+2)])
+        local_call(get_program_offset, 2, [In, cerl:c_int(-2)]),
+        local_call(get_program_offset, 2, [In, cerl:c_int(-1)]),
+        local_call(get_program_offset, 2, [In, cerl:c_int( 0)]),
+        local_call(get_program_offset, 2, [In, cerl:c_int(+1)]),
+        local_call(get_program_offset, 2, [In, cerl:c_int(+2)])
     ],
 
     TapeCodeGen = codegen_get(7, In),
@@ -160,12 +160,12 @@ codegen_print(In) ->
         cerl:c_seq(
             cerl:c_seq(
                 cerl:c_seq(
-                   cerl:c_call(cerl:c_atom(io), cerl:c_atom(format), PointersPrint),
-                   cerl:c_call(cerl:c_atom(io), cerl:c_atom(format), MemoryPrint)
+                   call(io, format, PointersPrint),
+                   call(io, format, MemoryPrint)
                 ),
-                cerl:c_call(cerl:c_atom(io), cerl:c_atom(format), ProgramPrint)
+                call(io, format, ProgramPrint)
             ),
-            cerl:c_call(cerl:c_atom(io), cerl:c_atom(format), InputPrint)
+            call(io, format, InputPrint)
         ),
         In
     ).
@@ -179,16 +179,16 @@ codegen_new_array() ->
         cerl:c_tuple([cerl:c_atom(default), cerl:c_int(0)])
     ],
 
-    cerl:c_call(cerl:c_atom(array), cerl:c_atom(new), [cerl:make_list(Options)]).
+    call(array, new, [cerl:make_list(Options)]).
 
 codegen_deferred_application(Instruction, release) ->
     StateIn = cerl:c_var('StateIn'),
-    cerl:c_fun([StateIn], cerl:c_apply(cerl:c_fname(Instruction, 1), [StateIn]));
+    cerl:c_fun([StateIn], local_call(Instruction, 1, [StateIn]));
 
 codegen_deferred_application(Instruction, debug) ->
     StateIn = cerl:c_var('StateIn'),
 
-    DebugPrint = [cerl:c_fun([StateIn], cerl:c_apply(cerl:c_fname(print, 1), [StateIn]))],
+    DebugPrint = [cerl:c_fun([StateIn], local_call(print, 1, [StateIn]))],
     [codegen_deferred_application(Instruction, release)] ++ DebugPrint.
 
 codegen_state(Program, StringifiedCode, release, In) ->
@@ -213,7 +213,7 @@ codegen_state(Program, Code, debug, In) ->
         [Result],
         codegen_state(Program, Code, release, In),
         cerl:c_seq(
-            cerl:c_apply(cerl:c_fname(print, 1), [Result]),
+            local_call(print, 1, [Result]),
             Result
         )).
 
@@ -225,7 +225,7 @@ codegen_new_state(Program, Mode, In) ->
 %% Language logic and other helpers.
 
 codegen_set(Element, Value, In) ->
-    cerl:c_call(cerl:c_atom(erlang), cerl:c_atom(setelement), [cerl:c_int(Element), In, Value]).
+    call(erlang, setelement, [cerl:c_int(Element), In, Value]).
 
 codegen_inc(Element, In) ->
     codegen_update(Element, In, '+', 1).
@@ -242,7 +242,7 @@ codegen_update(Element, In, Modifier, Amount) ->
         codegen_get(Element, In),
         cerl:c_let(
             [Changed],
-            cerl:c_call(cerl:c_atom(erlang), cerl:c_atom(Modifier), [Value, cerl:c_int(Amount)]),
+            call(erlang, Modifier, [Value, cerl:c_int(Amount)]),
             codegen_set(Element, Changed, In)
         )
     ).
@@ -262,15 +262,15 @@ codegen_execute(In) ->
 
     cerl:c_let(
         [State],
-        cerl:c_apply(cerl:c_fname(build_state, 1), [In]),
+        local_call(build_state, 1, [In]),
         cerl:c_let(
             [Final],
             cerl:c_let(
                 [Program],
-                cerl:c_call(cerl:c_atom(erlang), cerl:c_atom(element), [cerl:c_int(3), State]),
-                cerl:c_call(cerl:c_atom(lists), cerl:c_atom(foldl), [Step, State, Program])
+                call(erlang, element, [cerl:c_int(3), State]),
+                call(lists, foldl, [Step, State, Program])
             ),
-            cerl:c_call(cerl:c_atom(erlang), cerl:c_atom(element), [cerl:c_int(1), Final])
+            call(erlang, element, [cerl:c_int(1), Final])
         )
     ).
 
@@ -334,7 +334,7 @@ codegen_language_library(Program, Mode, ?HUMAN_NAME_BFO, Flags) ->
 %% Main flow.
 
 codegen_main(Input) ->
-    cerl:c_apply(cerl:c_fname(execute, 1), [Input]).
+    local_call(execute, 1, [Input]).
 
 build(ParsedProgram, Input, Flags) ->
     Mode = case proplists:lookup(debug, Flags) of
