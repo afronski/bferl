@@ -57,7 +57,7 @@
   - [ ] Fix all *dialyzer* errors related to project.
 - [ ] Improvements:
   - [ ] *REPL* and *Interpreter* - Detecting infinite loop based on *IC* observation.
+  - [ ] *Compiler* - Safe pointers operations in `debug` mode.
   - [ ] *Compiler* - Optimization stages.
     - [ ] Removing unused code.
-    - [ ] Safe pointers operations in `debug` mode.
     - [ ] Rolling up increments/decrements, pointer movements.
