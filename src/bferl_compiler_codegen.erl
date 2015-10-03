@@ -233,6 +233,97 @@ codegen_new_state(Program, Mode, In) ->
 
 %% Language logic and other helpers.
 
+codegen_find_bracket(Element, Acc) ->
+    Character = cerl:c_var('Character'),
+    Position = cerl:c_var('Position'),
+    OldPosition = cerl:c_var('OldPosition'),
+    StackSize = cerl:c_var('StackSize'),
+
+    Unbound = cerl:c_var('_'),
+
+    cerl:c_let(
+        [Character],
+        call(erlang, element, [cerl:c_int(1), Element]),
+        cerl:c_let(
+            [Position],
+            call(erlang, element, [cerl:c_int(2), Element]),
+            cerl:c_let(
+                [OldPosition],
+                call(erlang, element, [cerl:c_int(1), Acc]),
+                cerl:c_let(
+                   [StackSize],
+                   call(erlang, element, [cerl:c_int(2), Acc]),
+                   cerl:c_case(
+                       Character,
+                       [
+                         cerl:c_clause(
+                           [cerl:c_char($])],
+                           call(erlang, '=:=', [OldPosition, cerl:c_int(-1)]),
+                           cerl:c_case(
+                               call(erlang, '=:=', [StackSize, cerl:c_int(0)]),
+                               [
+                                 cerl:c_clause(
+                                     [cerl:c_atom(true)],
+                                     cerl:c_tuple([Position, cerl:c_int(0)])
+                                 ),
+
+                                 cerl:c_clause(
+                                     [cerl:c_atom(false)],
+                                     Acc
+                                 )
+                               ]
+                           )
+                         ),
+
+                         cerl:c_clause(
+                           [cerl:c_char($])],
+                           call(erlang, '=:=', [Position, cerl:c_int(-1)]),
+                           cerl:c_tuple([Position, call(erlang, '-', [StackSize, cerl:c_int(1)])])
+                         ),
+
+                         cerl:c_clause(
+                           [cerl:c_char($[)],
+                           call(erlang, '=:=', [Position, cerl:c_int(-1)]),
+                           cerl:c_tuple([Position, call(erlang, '+', [StackSize, cerl:c_int(1)])])
+                         ),
+
+                         cerl:c_clause(
+                           [Unbound],
+                           Acc
+                         )
+                       ]
+                   )
+                )
+            )
+        )
+    ).
+
+codegen_goto_end(IP, Code) ->
+    ProgramLength = cerl:c_var('ProgramLength'),
+    SubProgram = cerl:c_var('SubProgram'),
+    SubProgramWithIndexes = cerl:c_var('SubProgramWithIndexes'),
+    NewIP = cerl:c_var('NewIP'),
+
+    cerl:c_let(
+        [ProgramLength],
+        call(erlang, length, [Code]),
+        cerl:c_let(
+            [SubProgram],
+            call(lists, sublist, [Code, call(erlang, '+', [IP, cerl:c_int(1)]), ProgramLength]),
+            cerl:c_let(
+                [SubProgramWithIndexes],
+                call(lists, zip, [SubProgram, call(lists, seq, [cerl:c_int(1), ProgramLength])]),
+                cerl:c_let(
+                    [NewIP],
+                    call(lists, foldl, [ cerl:c_fname(find_bracket, 2),
+                                         cerl:c_tuple([cerl:c_int(-1), cerl:c_int(0)]),
+                                         SubProgramWithIndexes ]),
+                    call(erlang, '+', [NewIP, cerl:c_int(1)])
+                )
+            )
+        )
+    ).
+
 codegen_modify_memory_cell(In, Modifier, Amount) ->
     Memory = cerl:c_var('Memory'),
     MP = cerl:c_var('MP'),
@@ -385,6 +476,112 @@ codegen_put_character(In) ->
         )
     ).
 
+codegen_test(In) ->
+    Value = cerl:c_var('Value'),
+
+    Program = cerl:c_var('Program'),
+
+    Stack = cerl:c_var('Stack'),
+    IP = cerl:c_var('IP'),
+    NewIP = cerl:c_var('IP'),
+
+    NewStack = cerl:c_var('NewStack'),
+
+    StateWithModifiedStack = cerl:c_var('StateWithModifiedStack'),
+
+    cerl:c_let(
+        [Stack],
+        codegen_get(6, In),
+        cerl:c_let(
+            [IP],
+            local_call(get_ip, 1, [In]),
+            cerl:c_let(
+                [Value],
+                local_call(get_memory_offset, 2, [In, cerl:c_int(0)]),
+                cerl:c_case(
+                    call(erlang, '=:=', [Value, cerl:c_int(0)]),
+                    [
+                      %% We should jump to the end of the loop.
+                      cerl:c_clause(
+                          [cerl:c_atom(true)],
+                          cerl:c_let(
+                              [NewStack],
+                              call(erlang, tl, [Stack]),
+                              cerl:c_let(
+                                  [StateWithModifiedStack],
+                                  codegen_set(6, NewStack, In),
+                                  cerl:c_let(
+                                      [Program],
+                                      codegen_get(8, StateWithModifiedStack),
+                                      cerl:c_let(
+                                          [NewIP],
+                                          local_call(goto_end, 2, [IP, Program]),
+                                          codegen_set(2, NewIP, StateWithModifiedStack)
+                                      )
+                                  )
+                              )
+                          )
+                      ),
+
+                      %% We should continue normal execution.
+                      cerl:c_clause(
+                          [cerl:c_atom(false)],
+                          cerl:c_let(
+                              [NewStack],
+                              cerl:c_case(
+                                  call(erlang, '=:=', [call(erlang, length, [Stack]), cerl:c_int(0)]),
+                                  [
+                                    cerl:c_clause(
+                                        [cerl:c_atom(true)],
+                                        cerl:c_cons(IP, Stack)
+                                    ),
+
+                                    cerl:c_clause(
+                                        [cerl:c_atom(false)],
+                                        cerl:c_case(
+                                            call(erlang, '=:=', [IP, call(erlang, hd, [Stack])]),
+                                            [
+                                              cerl:c_clause(
+                                                  [cerl:c_atom(true)],
+                                                  Stack
+                                              ),
+
+                                              cerl:c_clause(
+                                                  [cerl:c_atom(false)],
+                                                  cerl:c_cons(IP, Stack)
+                                              )
+                                            ]
+                                        )
+                                    )
+                                  ]
+                              ),
+                              cerl:c_let(
+                                  [StateWithModifiedStack],
+                                  codegen_set(6, NewStack, In),
+                                  local_call(inc_ip, 1, [StateWithModifiedStack])
+                              )
+                          )
+                      )
+                    ]
+                )
+            )
+        )
+    ).
+
+codegen_ret(In) ->
+    Stack = cerl:c_var('Stack'),
+    NewIP = cerl:c_var('NewIP'),
+
+    cerl:c_let(
+        [Stack],
+        codegen_get(6, In),
+        cerl:c_let(
+            [NewIP],
+            call(erlang, hd, [Stack]),
+            local_call(set_ip, 2, [In, NewIP])
+        )
+    ).
+
 %% Execution and libraries.
 
 codegen_execute(In) ->
@@ -400,6 +597,7 @@ codegen_execute(In) ->
 
     Step = cerl:c_fun([Element, In], cerl:c_apply(Element, [In])),
 
+    %% TODO: `lists:foldl` will only execute code linearly, without looping :(
     cerl:c_let(
         [State],
         local_call(build_state, 1, [In]),
@@ -446,6 +644,9 @@ codegen_brainfuck(Program, Mode, Flags) ->
         {cerl:c_fname(get_memory_offset, 2), cerl:c_fun([In, Value], codegen_safe_array_get(In, Value))},
         {cerl:c_fname(get_program_offset, 2), cerl:c_fun([In, Value], codegen_safe_list_nth(In, Value))},
 
+        {cerl:c_fname(find_bracket, 2), cerl:c_fun([In, Value], codegen_find_bracket(In, Value))},
+        {cerl:c_fname(goto_end, 2), cerl:c_fun([In, Value], codegen_goto_end(In, Value))},
+
         {cerl:c_fname(inc_ic, 1), cerl:c_fun([In], codegen_inc(1, In))},
 
         {cerl:c_fname(inc_ip, 1), cerl:c_fun([In], codegen_inc(2, In))},
@@ -460,6 +661,9 @@ codegen_brainfuck(Program, Mode, Flags) ->
         {cerl:c_fname(getc, 1), cerl:c_fun([In], codegen_get_character(In))},
         {cerl:c_fname(putc, 1), cerl:c_fun([In], codegen_put_character(In))},
 
+        {cerl:c_fname(test, 1), cerl:c_fun([In], codegen_test(In))},
+        {cerl:c_fname(ret, 1), cerl:c_fun([In], codegen_ret(In))},
+
         %% Opcodes.
 
         {cerl:c_fname(left, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(dec_mp, 1, [S]) end ] ++ ops()))},
@@ -471,10 +675,10 @@ codegen_brainfuck(Program, Mode, Flags) ->
         {cerl:c_fname(in, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(getc, 1, [S]) end ] ++ ops()))},
         {cerl:c_fname(out, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(putc, 1, [S]) end ] ++ ops()))},
 
-        %% TODO: Implementation in *Core Erlang*.
-
-        {cerl:c_fname(start_loop, 1), cerl:c_fun([In], chain(In, ops()))},
-        {cerl:c_fname(end_loop, 1), cerl:c_fun([In], chain(In, ops()))}
+        {cerl:c_fname(start_loop, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(test, 1, [S]) end,
+                                                                   fun(S) -> local_call(inc_ic, 1, [S]) end ]))},
+        {cerl:c_fname(end_loop, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(ret, 1, [S]) end,
+                                                                 fun(S) -> local_call(inc_ic, 1, [S]) end ]))}
     ].
 
 codegen_brainfork() ->
