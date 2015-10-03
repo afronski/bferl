@@ -1,19 +1,5 @@
 # TODO
 
-## Next phase - Compiler
-
-- [x] Compiler facility.
-- [x] Helpers for showing transpiled representation and type of the program.
-- [x] Lexer and Parser.
-  - [x] Verify that loops are closed during compilation.
-- [x] Code Generation
-  - [x] Compiling source to the *Core Erlang* representation.
-    - [x] Compile it to the single function inside module with *fixed* structure.
-  - [x] Compiling code in `debug` and `release` modes.
-  - [x] Change execution mechanism to `lists:foldl/3`.
-  - [x] Create state tuple in `build_state/1` and return `IC` afterwards.
-  - [x] Language logic implemented in *Core Erlang*.
-
 ## Next phase - Virtual Machine
 
 - [ ] *Virtual Machine* facility.
