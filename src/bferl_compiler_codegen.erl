@@ -26,6 +26,15 @@ local_call(Name, Arity, Args) when is_atom(Name), is_integer(Arity), is_list(Arg
 call(Module, Name, Args) when is_atom(Module), is_atom(Name), is_list(Args) ->
     cerl:c_call(cerl:c_atom(Module), cerl:c_atom(Name), Args).
 
+chain(In, Operations) ->
+    [H | T] = lists:reverse(Operations),
+    chain_composition(H, T, In, 0).
+
+chain_composition(F, [], Prev, _Level) -> F(Prev);
+chain_composition(F, [H | T], Prev, Level) ->
+    Var = cerl:c_var(Level),
+    cerl:c_let([Var], F(Prev), chain_composition(H, T, Var, Level + 1)).
+
 %% We need to replicate `module_info/{0,1}` functions
 %% because they are delivered to the Core Erlang representation.
 
@@ -224,6 +233,41 @@ codegen_new_state(Program, Mode, In) ->
 
 %% Language logic and other helpers.
 
+codegen_modify_memory_cell(In, Modifier, Amount) ->
+    Memory = cerl:c_var('Memory'),
+    MP = cerl:c_var('MP'),
+    Value = cerl:c_var('Value'),
+    Changed = cerl:c_var('Changed'),
+    ChangedMemory = cerl:c_var('ChangedMemory'),
+
+    cerl:c_let(
+        [Memory],
+        codegen_get(5, In),
+        cerl:c_let(
+            [MP],
+            codegen_get(4, In),
+            cerl:c_let(
+                [Value],
+                call(array, get, [MP, Memory]),
+                cerl:c_let(
+                    [Changed],
+                    call(erlang, Modifier, [Value, cerl:c_int(Amount)]),
+                    cerl:c_let(
+                        [ChangedMemory],
+                        call(array, set, [MP, Changed, Memory]),
+                        codegen_set(5, ChangedMemory, In)
+                    )
+                )
+            )
+        )
+   ).
+
+codegen_inc_memory_cell(In) ->
+    codegen_modify_memory_cell(In, '+', 1).
+
+codegen_dec_memory_cell(In) ->
+    codegen_modify_memory_cell(In, '-', 1).
+
 codegen_set(Element, Value, In) ->
     call(erlang, setelement, [cerl:c_int(Element), In, Value]).
 
@@ -274,6 +318,10 @@ codegen_execute(In) ->
         )
     ).
 
+ops() ->
+    [ fun(S) -> local_call(inc_ip, 1, [S]) end,
+      fun(S) -> local_call(inc_ic, 1, [S]) end ].
+
 codegen_brainfuck(Program, Mode, Flags) ->
     In = cerl:c_var('In'),
     Value = cerl:c_var('Value'),
@@ -303,27 +351,28 @@ codegen_brainfuck(Program, Mode, Flags) ->
         {cerl:c_fname(inc_mp, 1), cerl:c_fun([In], codegen_inc(4, In))},
         {cerl:c_fname(dec_mp, 1), cerl:c_fun([In], codegen_dec(4, In))},
 
+        {cerl:c_fname(inc_memory, 1), cerl:c_fun([In], codegen_inc_memory_cell(In))},
+        {cerl:c_fname(dec_memory, 1), cerl:c_fun([In], codegen_dec_memory_cell(In))},
+
+        {cerl:c_fname(left, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(dec_mp, 1, [S]) end ] ++ ops()))},
+        {cerl:c_fname(right, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(inc_mp, 1, [S]) end ] ++ ops()))},
+
+        {cerl:c_fname(inc, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(inc_memory, 1, [S]) end ] ++ ops()))},
+        {cerl:c_fname(dec, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(dec_memory, 1, [S]) end ] ++ ops()))},
+
         %% TODO: Implementation in *Core Erlang*.
 
-        {cerl:c_fname(inc, 1), cerl:c_fun([In], local_call(inc_ic, 1, [In]))},
-        {cerl:c_fname(dec, 1), cerl:c_fun([In], local_call(inc_ic, 1, [In]))},
+        {cerl:c_fname(in, 1), cerl:c_fun([In], chain(In, ops()))},
+        {cerl:c_fname(out, 1), cerl:c_fun([In], chain(In, ops()))},
 
-        {cerl:c_fname(left, 1), cerl:c_fun([In], local_call(inc_ic, 1, [In]))},
-        {cerl:c_fname(right, 1), cerl:c_fun([In], local_call(inc_ic, 1, [In]))},
-
-        {cerl:c_fname(in, 1), cerl:c_fun([In], local_call(inc_ic, 1, [In]))},
-        {cerl:c_fname(out, 1), cerl:c_fun([In], local_call(inc_ic, 1, [In]))},
-
-        {cerl:c_fname(start_loop, 1), cerl:c_fun([In], local_call(inc_ic, 1, [In]))},
-        {cerl:c_fname(end_loop, 1), cerl:c_fun([In], local_call(inc_ic, 1, [In]))}
+        {cerl:c_fname(start_loop, 1), cerl:c_fun([In], chain(In, ops()))},
+        {cerl:c_fname(end_loop, 1), cerl:c_fun([In], chain(In, ops()))}
     ].
 
 codegen_brainfork() ->
     In = cerl:c_var('In'),
 
-    %% TODO: Implementation in *Core Erlang*.
-
-    [{cerl:c_fname(fork, 1), cerl:c_fun([In], local_call(inc_ic, 1, [In]))}].
+    [{cerl:c_fname(fork, 1), cerl:c_fun([In], chain(In, ops()))}].
 
 codegen_language_library(Program, Mode, ?HUMAN_NAME_BF, Flags) ->
     codegen_brainfuck(Program, Mode, Flags);
