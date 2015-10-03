@@ -59,4 +59,5 @@
   - [ ] *REPL* and *Interpreter* - Detecting infinite loop based on *IC* observation.
   - [ ] *Compiler* - Optimization stages.
     - [ ] Removing unused code.
+    - [ ] Safe pointers operations in `debug` mode.
     - [ ] Rolling up increments/decrements, pointer movements.
