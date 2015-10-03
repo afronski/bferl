@@ -12,7 +12,7 @@
   - [x] Compiling code in `debug` and `release` modes.
   - [x] Change execution mechanism to `lists:foldl/3`.
   - [x] Create state tuple in `build_state/1` and return `IC` afterwards.
-  - [ ] Language logic implemented in *Core Erlang*.
+  - [x] Language logic implemented in *Core Erlang*.
 
 ## Next phase - Virtual Machine
 
@@ -58,6 +58,7 @@
 - [ ] Improvements:
   - [ ] *REPL* and *Interpreter* - Detecting infinite loop based on *IC* observation.
   - [ ] *Compiler* - Safe pointers operations in `debug` mode.
+  - [ ] *Compiler* - Pretty print *Core Erlang* to file.
   - [ ] *Compiler* - Optimization stages.
     - [ ] Removing unused code.
     - [ ] Rolling up increments/decrements, pointer movements.
