@@ -100,7 +100,7 @@ init([]) ->
 
 handle_call({compile, Program, Type, Flags}, _From, State) ->
     {Name, NewState} = create_module_name(State),
-    Reply = compile_and_load(Name, Program, Type, Flags),
+    Reply = compile_and_load(Name, string:join(Program, ""), Type, Flags),
     {reply, Reply, NewState}.
 
 handle_cast(_Message, State) ->
