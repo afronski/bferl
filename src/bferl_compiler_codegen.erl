@@ -160,7 +160,7 @@ codegen_print(In) ->
 
     TapeCodeGen = codegen_get(7, In),
 
-    PointersPrint = [cerl:c_string("[DEBUG] POINTERS: IC: ~2B IP: ~2B MP: ~2B~n"), cerl:make_list(Pointers)],
+    PointersPrint = [cerl:c_string("~n[DEBUG] POINTERS: IC: ~2B IP: ~2B MP: ~2B~n"), cerl:make_list(Pointers)],
     MemoryPrint   = [cerl:c_string("        MEMORY:  ~3B ~3B (~3B) ~3B ~3B~n"), cerl:make_list(Memory)],
     ProgramPrint  = [cerl:c_string("        PROGRAM:   ~1c   ~1c (  ~1c)   ~1c   ~1c~n"), cerl:make_list(Program)],
     InputPrint    = [cerl:c_string("        INPUT:    ~p~n"), cerl:make_list([TapeCodeGen])],
@@ -291,11 +291,107 @@ codegen_update(Element, In, Modifier, Amount) ->
         )
     ).
 
+codegen_get_character(In) ->
+    Memory = cerl:c_var('Memory'),
+    MP = cerl:c_var('MP'),
+
+    Value = cerl:c_var('Value'),
+    Line = cerl:c_var('Line'),
+
+    Tape = cerl:c_var('Tape'),
+
+    Unbound = cerl:c_var('_'),
+    ChangedMemory = cerl:c_var('ChangedMemory'),
+
+    StateWithModifiedMemory = cerl:c_var('StateWithModifiedMemory'),
+
+    cerl:c_let(
+        [Memory],
+        codegen_get(5, In),
+        cerl:c_let(
+            [MP],
+            codegen_get(4, In),
+            cerl:c_let(
+                [Tape],
+                codegen_get(7, In),
+                cerl:c_case(
+                    call(erlang, length, [Tape]),
+                    [
+                      % Empty tape - read interactively from I/O.
+                      cerl:c_clause(
+                          [cerl:c_int(0)],
+                          cerl:c_let(
+                              [Line],
+                              call(io, get_line, [cerl:c_string(?BRAINFUCK_IO_PROMPT)]),
+                              cerl:c_let(
+                                  [Value],
+                                  cerl:c_case(
+                                      call(erlang, hd, [Line]),
+                                      [ cerl:c_clause([cerl:c_int(10)], cerl:c_int(0)),
+                                        cerl:c_clause([cerl:c_int(13)], cerl:c_int(0)),
+                                        cerl:c_clause([Unbound], call(erlang, hd, [Line])) ]
+                                  ),
+                                  cerl:c_let(
+                                      [ChangedMemory],
+                                      call(array, set, [MP, Value, Memory]),
+                                      codegen_set(5, ChangedMemory, In)
+                                  )
+                              )
+                          )
+                      ),
+
+                      % Tape has characters - take one.
+                      cerl:c_clause(
+                          [Unbound],
+                          cerl:c_let(
+                              [Value],
+                              call(erlang, hd, [Tape]),
+                              cerl:c_let(
+                                  [ChangedMemory],
+                                  call(array, set, [MP, Value, Memory]),
+                                  cerl:c_let(
+                                      [StateWithModifiedMemory],
+                                      codegen_set(5, ChangedMemory, In),
+                                      codegen_set(7, call(erlang, tl, [Tape]), StateWithModifiedMemory)
+                                  )
+                              )
+                          )
+                      )
+                    ]
+                )
+            )
+        )
+    ).
+
+codegen_put_character(In) ->
+    Memory = cerl:c_var('Memory'),
+    MP = cerl:c_var('MP'),
+    Value = cerl:c_var('Value'),
+
+    cerl:c_let(
+        [Memory],
+        codegen_get(5, In),
+        cerl:c_let(
+            [MP],
+            codegen_get(4, In),
+            cerl:c_let(
+                [Value],
+                call(array, get, [MP, Memory]),
+                cerl:c_seq(
+                    call(io, format, [cerl:c_string("~1c"), cerl:make_list([Value])]),
+                    In
+                )
+            )
+        )
+    ).
+
 %% Execution and libraries.
 
 codegen_execute(In) ->
     State = cerl:c_var('State'),
     Final = cerl:c_var('Final'),
+
+    Result = cerl:c_var('Result'),
 
     Element = cerl:c_var('Element'),
     In = cerl:c_var('In'),
@@ -314,7 +410,14 @@ codegen_execute(In) ->
                 call(erlang, element, [cerl:c_int(3), State]),
                 call(lists, foldl, [Step, State, Program])
             ),
-            call(erlang, element, [cerl:c_int(1), Final])
+            cerl:c_let(
+                [Result],
+                call(erlang, element, [cerl:c_int(1), Final]),
+                cerl:c_seq(
+                    call(io, nl, []),
+                    cerl:c_tuple([cerl:c_atom(executed_instructions), Result])
+                )
+            )
         )
     ).
 
@@ -354,16 +457,21 @@ codegen_brainfuck(Program, Mode, Flags) ->
         {cerl:c_fname(inc_memory, 1), cerl:c_fun([In], codegen_inc_memory_cell(In))},
         {cerl:c_fname(dec_memory, 1), cerl:c_fun([In], codegen_dec_memory_cell(In))},
 
+        {cerl:c_fname(getc, 1), cerl:c_fun([In], codegen_get_character(In))},
+        {cerl:c_fname(putc, 1), cerl:c_fun([In], codegen_put_character(In))},
+
+        %% Opcodes.
+
         {cerl:c_fname(left, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(dec_mp, 1, [S]) end ] ++ ops()))},
         {cerl:c_fname(right, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(inc_mp, 1, [S]) end ] ++ ops()))},
 
         {cerl:c_fname(inc, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(inc_memory, 1, [S]) end ] ++ ops()))},
         {cerl:c_fname(dec, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(dec_memory, 1, [S]) end ] ++ ops()))},
 
-        %% TODO: Implementation in *Core Erlang*.
+        {cerl:c_fname(in, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(getc, 1, [S]) end ] ++ ops()))},
+        {cerl:c_fname(out, 1), cerl:c_fun([In], chain(In, [ fun(S) -> local_call(putc, 1, [S]) end ] ++ ops()))},
 
-        {cerl:c_fname(in, 1), cerl:c_fun([In], chain(In, ops()))},
-        {cerl:c_fname(out, 1), cerl:c_fun([In], chain(In, ops()))},
+        %% TODO: Implementation in *Core Erlang*.
 
         {cerl:c_fname(start_loop, 1), cerl:c_fun([In], chain(In, ops()))},
         {cerl:c_fname(end_loop, 1), cerl:c_fun([In], chain(In, ops()))}
