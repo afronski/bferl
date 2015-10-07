@@ -8,12 +8,14 @@
 -export([ all/0, init_per_testcase/2, end_per_testcase/2 ]).
 -export([ testing_input_and_output/1, testing_hello_world/1,
           testing_loop_with_input_and_output/1,
+          testing_loop_with_input_and_memory_modification/1,
           testing_nontrivial_programs_adding_two_digits_and_displaying_result_if_it_is_a_digit/1 ]).
 
 all() ->
     [ testing_input_and_output,
       testing_hello_world,
       testing_loop_with_input_and_output,
+      testing_loop_with_input_and_memory_modification,
       testing_nontrivial_programs_adding_two_digits_and_displaying_result_if_it_is_a_digit ].
 
 init_per_testcase(_TestCase, Config) ->
@@ -68,6 +70,20 @@ testing_loop_with_input_and_output(_Context) ->
 
     % Calculation: 1x ',', 3x '[.,]' and +1 for `end_of_program`.
     ?assertEqual(1 + 3 * 4 + 1, Output#interpreter.instructions_counter).
+
+testing_loop_with_input_and_memory_modification(_Context) ->
+    State = bferl_programming_language_logic:new(["+", "+", "[", ">", ",", "+", ".", "<", "-", "]"]),
+
+    bferl_io:tape("AB"),
+    StateWithIO = bferl_programming_language_logic:register_tape(State),
+
+    Output = bferl_programming_language_logic:run(StateWithIO),
+    Tape = bferl_io:get_output_tape(),
+
+    ?assertEqual("BC", Tape),
+
+    % Calculation: 2x '+', 2x '[>,+.<-]' and +1 for `end_of_program`.
+    ?assertEqual(2 + 2 * 8 + 1, Output#interpreter.instructions_counter).
 
 testing_nontrivial_programs_adding_two_digits_and_displaying_result_if_it_is_a_digit(_Context) ->
     State = bferl_programming_language_logic:new(bferl_tokenizer:from_string(",>++++++[<-------->-],[<+>-]<.")),
