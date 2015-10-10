@@ -8,7 +8,7 @@ Another part of that project is a *Compiler*. It uses all standard techniques bu
 
 ![Compiler pipeline](./images/compiler-pipeline.png)
 
-[*Image taken from the excellent presentation*](http://www.erlang-factory.com/upload/presentations/523/EFSF2012-Implementinglanguages.pdf)
+[*Image taken from the excellent presentation.*](http://www.erlang-factory.com/upload/presentations/523/EFSF2012-Implementinglanguages.pdf)
 
 Life of an *Erlang* file (http://studzien.github.io/hack-vm/part1.html#slide-5) begins with *preprocessing* (in order to evaluate all macros). Then, we are doing an *expansion* process , which is the first level of indirection on which you can hook as a *compiler engineer*.
 
@@ -40,21 +40,76 @@ There is a one *thing*, which not explained enough in various places. Because we
 
 The main point of choosing that over the generating the *Erlang* syntax is its regularity - it is just easier to generate *Core Erlang*, because it has much stricter and fair rules regarding, both semantics and structure. Additionally, all forms and clauses have helpers prepared in the modules [`cerl`](http://erldocs.com/18.0/compiler/cerl.html) and [`cerl_clauses`](http://erldocs.com/18.0/compiler/cerl_clauses.html).
 
-## API
+### Modules
 
-*TODO*
+#### `bferl_tools_compiler`
+
+Main compiler *front-end*, implemented as a `gen_server`. It exposes couple of methods, stores state of the compiler (in order to properly build the module name). Also has some simple debugging facilities.
+
+After compiling and loading a module it will return the name of it as a result. Generated module has two entry points available from the outside:
+
+- `ModuleName:start/0` - It starts the compiled program. It will use *console* as a main I/O mechanism.
+- `ModuleName:start/1` - It starts the compiled program, but it will provide an input tape as an input mechanism. Still, *console* is used as an output mechanism.
+
+For now `ModuleName` is constructed in a very simple way - it is an atom with in form `evaluation_N`, where `N` is a number of performed compilations in that particular server instance. Keep in mind that the results will differ from your expectations, when you have multiple instances of that server or your server restarted, but the node did not, and it still has some compiled modules loaded.
+
+#### `bferl_compiler_lexer_*` and `bferl_compiler_parser_*`
+
+Lexer and parser generated from files `.xrl` (lexer) and `.yrl` (parser) via mechanisms described above. **It is a generated code, there will be dragons there**.
+
+#### `bferl_compiler_codegen`
+
+Actually the main responsibility of the compiler, besides lexical analysis and verifying its semantics via parser, it has to generate actual code, which will be compiled afterwards. In this implementation *code generation* module is a crucial part of the compiler, mostly because of really scarce syntactical and semantic rules.
+
+It uses heavily `cerl` module, and it is build with many smaller abstractions, but code is hard to read at first, because of different nature of the *Core Erlang*. Probably the safest place to start will be a `make_module/4` function (at the bottom of a file).
+
+## API
 
 ### Helpers
 
-*TODO*
+Application level helpers and shortcuts for ease of use.
+
+- `bferl_app:compile_file/1`
+  - It compiles a file from a provided path name.
+  - It can differentiate *Brainfuck* from *Brainfork* by an extension (details [here](#Brainfork)).
+- `bferl_app:compile_file/2`
+  - It compiles a file in `debug` mode from a provided path name.
+  - **Only** a `debug` atom is acceptable as a second argument.
+  - It can differentiate *Brainfuck* from *Brainfork* by an extension (details [here](#Brainfork)).
+- `bferl_app:compile_code/1`
+  - It compiles a code provided as a string in first argument.
+  - Code is always interpreted as *Brainfuck
+- `bferl_app:compile_code/2`
+  - It compiles code in `debug` mode, provided as a string in first argument.
+  - **Only** a `debug` atom is acceptable as a second argument.
+  - Code is always interpreted as *Brainfuck
+
+All of those functions returns either:
+
+- `{ok, ModuleName}` - where `ModuleName` is a new module name with entry points described above.
+- `{error, ErrorsList, WarningsList, Metadata}`
 
 ### `bferl_tools_compiler`
 
-*TODO*
+- `bferl_tools_compiler:start_link/0`
+  - It starts the server, as usually `start_link` do.
+- `bferl_tools_compiler:compile_and_load/2`
+  - It compiles and loads a module from a provided program (first argument) and its type (either `"Brainfuck"` or `"Brainfork"`).
+  - Functions returns either
+    - `{ok, ModuleName}` - where `ModuleName` is a new module name with entry points described above.
+    - `{error, ErrorsList, WarningsList, Metadata}`
+- `bferl_tools_compiler:compile_and_load/3`
+  - Does the same thing as above but also delivers the flags to the compilation process (third argument).
+  - Acceptable flags:
+    - `debug` - Inserts the debug instructions to the generated code (they print state after executing each instruction).
+    - `pretty_print` - It pretty prints the generated *Core Erlang* representation. **CAUTION**: it can be really huge.
+  - Functions returns either
+    - `{ok, ModuleName}` - where `ModuleName` is a new module name with entry points described above.
+    - `{error, ErrorsList, WarningsList, Metadata}`
 
 ### *Brainfork*
 
-*TODO*
+If you want to compile a *Brainfork* code, you have to use application helpers for that, which are reading the files. It is the only way to properly deliver a *Brainfork* code to the compiler subsystem. It will recognize this language by the extension - each file with `.bfo` extension will be treated as a *Brainfork* code.
 
 ## Example Session
 
