@@ -71,11 +71,11 @@ Application level helpers and shortcuts for ease of use.
 
 - `bferl_app:compile_file/1`
   - It compiles a file from a provided path name.
-  - It can differentiate *Brainfuck* from *Brainfork* by an extension (details [here](#Brainfork)).
+  - It can differentiate *Brainfuck* from *Brainfork* by an extension (details [here](#brainfork)).
 - `bferl_app:compile_file/2`
   - It compiles a file in `debug` mode from a provided path name.
   - **Only** a `debug` atom is acceptable as a second argument.
-  - It can differentiate *Brainfuck* from *Brainfork* by an extension (details [here](#Brainfork)).
+  - It can differentiate *Brainfuck* from *Brainfork* by an extension (details [here](#brainfork)).
 - `bferl_app:compile_code/1`
   - It compiles a code provided as a string in first argument.
   - Code is always interpreted as *Brainfuck
