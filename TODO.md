@@ -23,8 +23,8 @@
 
 - [x] *README* review.
 - [x] *Architecture* overview.
-- [ ] *REPL* and *Interpreter* overview.
-- [ ] *REPL* and *Interpreter* internals.
+- [x] *REPL* and *Interpreter* overview.
+- [x] *REPL* and *Interpreter* internals.
   - [ ] Example session
 - [ ] *Compiler* overview.
 - [ ] *Compiler* internals.
