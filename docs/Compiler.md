@@ -8,7 +8,7 @@ Another part of that project is a *Compiler*. It uses all standard techniques bu
 
 ![Compiler pipeline](./images/compiler-pipeline.png)
 
-[*Image taken from the excellent presentation.*](http://www.erlang-factory.com/upload/presentations/523/EFSF2012-Implementinglanguages.pdf)
+[*Image taken from the excellent presentation about implementing languages on Erlang VM.*](http://www.erlang-factory.com/upload/presentations/523/EFSF2012-Implementinglanguages.pdf)
 
 Life of an *Erlang* file (http://studzien.github.io/hack-vm/part1.html#slide-5) begins with *preprocessing* (in order to evaluate all macros). Then, we are doing an *expansion* process , which is the first level of indirection on which you can hook as a *compiler engineer*.
 
@@ -113,4 +113,4 @@ If you want to compile a *Brainfork* code, you have to use application helpers f
 
 ## Example Session
 
-*TODO*
+[![asciicast](https://asciinema.org/a/1su0ij9c7q1mfx6nrl0rvcoau.png)](https://asciinema.org/a/1su0ij9c7q1mfx6nrl0rvcoau)

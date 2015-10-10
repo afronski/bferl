@@ -21,18 +21,9 @@
 
 ## Next phase - Documentation
 
-- [x] *README* review.
-- [x] *Architecture* overview.
-- [x] *REPL* and *Interpreter* overview.
-- [x] *REPL* and *Interpreter* internals.
-  - [ ] Example session
-- [ ] *Compiler* overview.
-- [ ] *Compiler* internals.
-  - [ ] Example session
 - [ ] *Virtual Machine* overview.
 - [ ] *Virtual Machine* internals.
   - [ ] Example session
-- [x] *Brainfork* overview.
 - [ ] *Brainfork* internals.
   - [ ] Example session
 

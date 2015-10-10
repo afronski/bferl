@@ -89,4 +89,4 @@ This module exposes all things which are necessary to use together with *REPL* o
 
 ## Example Session
 
-*TODO*
+[![asciicast](https://asciinema.org/a/159yfye8qvdvu9v5l71vey61g.png)](https://asciinema.org/a/159yfye8qvdvu9v5l71vey61g)
