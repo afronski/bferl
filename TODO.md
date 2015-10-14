@@ -3,7 +3,7 @@
 ## Next phase - Virtual Machine
 
 - [ ] *Virtual Machine* facility.
-  - [ ] Server and API.
+  - [x] Server and API.
   - [ ] Internal representation, preprocessing and stages.
   - [ ] *Heuristic* optimizations.
     - [ ] Rolling up increments / decrements.
