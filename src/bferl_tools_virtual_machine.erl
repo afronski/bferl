@@ -1,21 +1,58 @@
 -module(bferl_tools_virtual_machine).
 -behavior(gen_server).
 
--export([start_link/0]).
+-export([ start_link/0,
+          clear/0,
+          load/3,
+          start/0,
+          start/1 ]).
 
 -export([ init/1,
           handle_call/3, handle_cast/2, handle_info/2,
           terminate/2, code_change/3 ]).
 
 start_link() ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+    gen_server:start_link({local, ?MODULE}, ?MODULE, empty, []).
 
-init([]) ->
-    {ok, []}.
+clear() ->
+    gen_server:call(?MODULE, clear).
 
-handle_call(_Request, _From, State) ->
-    Reply = ok,
-    {reply, Reply, State}.
+load(Program, Type, Flags) ->
+    gen_server:call(?MODULE, {load, Program, Type, Flags}).
+
+start() ->
+    start([]).
+
+start(Flags) ->
+    gen_server:call(?MODULE, {start, Flags}).
+
+new_state() ->
+    #{"program_loaded" => false}.
+
+execute_when_loaded(false, State, _StartupFlags) ->
+   {reply, program_not_loaded, State};
+
+execute_when_loaded(true, State, StartupFlags) ->
+   Type = maps:get("type", State),
+   LoadingFlags = maps:get("loading_flags", State),
+
+   NewState = State#{"startup_flags" => StartupFlags},
+
+   {reply, {started, Type, {load, LoadingFlags}, {start, StartupFlags}}, NewState}.
+
+init(empty) ->
+    {ok, new_state()}.
+
+handle_call(clear, _From, _State) ->
+   {reply, cleared, new_state()};
+
+handle_call({load, _Program, Type, Flags}, _From, State) ->
+   NewState = State#{"type" => Type, "loading_flags" => Flags, "program_loaded" => true},
+   {reply, {loaded, Type, Flags}, NewState};
+
+handle_call({start, Flags}, _From, State) ->
+   Loaded = maps:get("program_loaded", State),
+   execute_when_loaded(Loaded, State, Flags).
 
 handle_cast(_Msg, State) ->
     {noreply, State}.
