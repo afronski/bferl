@@ -3,8 +3,11 @@
 ## Next phase - Virtual Machine
 
 - [ ] *Virtual Machine* facility.
-  - [x] Server and API.
+  - [x] Server and helpers API.
   - [ ] Internal representation, preprocessing and stages.
+    - [ ] Internal structure for the VM (different than interpreter one).
+    - [ ] Translating opcodes to IR (*Internal Representation*).
+    - [ ] Introducing conception of stages.
   - [ ] *Heuristic* optimizations.
     - [ ] Rolling up increments / decrements.
     - [ ] Rolling up pointer movements.
