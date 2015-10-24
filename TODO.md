@@ -12,6 +12,7 @@
     - [ ] Rolling up increments / decrements.
     - [ ] Rolling up pointer movements.
     - [ ] Building up jump table first.
+    - [ ] Replacing reading from input with constant loading when tape provided.
     - [ ] *Hot Code* detection.
       - [ ] Loops unwinding and body compilation.
 
