@@ -35,12 +35,12 @@
 ## Next phase - Improvements
 
 - [ ] *Dialyzer*:
-  - [ ] Find way to exclude Lexer / Parser includes from *dialyzer* analysis.
+  - [ ] Find way to exclude Lexer / Parser from *dialyzer* analysis.
   - [ ] Fix all *dialyzer* errors related to project.
 - [ ] Improvements:
   - [ ] *REPL* and *Interpreter* - Detecting infinite loop based on *IC* observation.
   - [ ] *Compiler* - Safe pointers operations in `debug` mode.
   - [ ] *Compiler* - Pretty print *Core Erlang* to file.
-  - [ ] *Compiler* - Optimization stages.
-    - [ ] Removing unused code.
+  - [ ] *Compiler* - Optimization stage.
+    - [ ] Removing unused code (based on used instructions).
     - [ ] Rolling up increments/decrements, pointer movements.
