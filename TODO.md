@@ -6,7 +6,7 @@
   - [x] Server and helpers API.
   - [ ] Internal representation, preprocessing and stages.
     - [ ] Internal structure for the VM (different than interpreter one).
-    - [ ] Translating opcodes to IR (*Internal Representation*).
+    - [ ] Translating opcodes to IR (*Internal representation*).
     - [ ] Introducing conception of stages.
   - [ ] *Heuristic* optimizations.
     - [ ] Rolling up increments / decrements.
