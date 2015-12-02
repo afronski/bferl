@@ -30,34 +30,35 @@ new_state() ->
     #{"program_loaded" => false}.
 
 execute_when_loaded(false, State, _StartupFlags) ->
-   {reply, program_not_loaded, State};
+    {program_not_loaded, State};
 
 execute_when_loaded(true, State, StartupFlags) ->
-   Type = maps:get("type", State),
-   LoadingFlags = maps:get("loading_flags", State),
+    Type = maps:get("type", State),
+    LoadingFlags = maps:get("loading_flags", State),
 
-   NewState = State#{"startup_flags" => StartupFlags},
+    NewState = State#{"startup_flags" => StartupFlags},
 
-   %% TODO: IR is more readable and verbose than BF, and it contains more generic operations like add, sub, jmp.
-   %% TODO: Optimizer, and IR compiler as separate processes.
-   %% TODO: Staged compilation is just a composition of calls.
-   %% TODO: Storing intermediate and optimized versions of programs in ETS, table owner is tools sup.
+    %% TODO: IR is more readable and verbose than BF, and it contains more generic operations like add, sub, jmp.
+    %% TODO: Optimizer, and IR compiler as separate processes.
+    %% TODO: Staged compilation is just a composition of calls.
+    %% TODO: Storing intermediate and optimized versions of programs in ETS, table owner is tools sup.
 
-   {reply, {started, Type, {load, LoadingFlags}, {start, StartupFlags}}, NewState}.
+    {{started, Type, {load, LoadingFlags}, {start, StartupFlags}}, NewState}.
 
 init(empty) ->
     {ok, new_state()}.
 
 handle_call(clear, _From, _State) ->
-   {reply, cleared, new_state()};
+    {reply, cleared, new_state()};
 
 handle_call({load, _Program, Type, Flags}, _From, State) ->
-   NewState = State#{"type" => Type, "loading_flags" => Flags, "program_loaded" => true},
-   {reply, {loaded, Type, Flags}, NewState};
+    NewState = State#{"type" => Type, "loading_flags" => Flags, "program_loaded" => true},
+    {reply, {loaded, Type, Flags}, NewState};
 
 handle_call({start, Flags}, _From, State) ->
-   Loaded = maps:get("program_loaded", State),
-   execute_when_loaded(Loaded, State, Flags).
+    Loaded = maps:get("program_loaded", State),
+    {Result, NewState} = execute_when_loaded(Loaded, State, Flags),
+    {reply, Result, NewState}.
 
 handle_cast(_Msg, State) ->
     {noreply, State}.

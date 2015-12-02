@@ -4,9 +4,9 @@
 
 - [ ] *Virtual Machine* facility.
   - [x] Server and helpers API.
-  - [ ] Internal representation, preprocessing and stages.
+  - [x] Internal representation, preprocessing and stages.
     - [ ] Internal structure for the VM (different than interpreter one).
-    - [ ] Translating opcodes to IR (*Internal representation*).
+    - [x] Translating opcodes to IR (*Internal representation*).
     - [ ] Introducing conception of stages.
   - [ ] *Heuristic* optimizations.
     - [ ] Rolling up increments / decrements.
