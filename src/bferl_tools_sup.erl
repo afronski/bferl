@@ -16,21 +16,26 @@ init(_Args) ->
 
     Restart = permanent,
     Shutdown = 1000,
-    Type = worker,
+    DefaultType = worker,
 
     Interpreter = {bferl_tools_interpreter,
                    {bferl_tools_interpreter, start_link, []},
-                   Restart, Shutdown, Type,
+                   Restart, Shutdown, DefaultType,
                    [ bferl_tools_interpreter ]},
 
     Compiler = {bferl_tools_compiler,
                 {bferl_tools_compiler, start_link, []},
-                Restart, Shutdown, Type,
+                Restart, Shutdown, DefaultType,
                 [ bferl_tools_compiler ]},
 
     VirtualMachine = {bferl_tools_virtual_machine,
                       {bferl_tools_virtual_machine, start_link, []},
-                      Restart, Shutdown, Type,
+                      Restart, Shutdown, DefaultType,
                       [ bferl_tools_virtual_machine ]},
 
-    {ok, {Flags, [ Interpreter, Compiler, VirtualMachine ]}}.
+    VmThreadsSupervisor = {bferl_vm_threads_sup,
+                           {bferl_vm_threads_sup, start_link, []},
+                           Restart, Shutdown, supervisor,
+                           [ bferl_vm_threads_sup ]},
+
+    {ok, {Flags, [ Interpreter, Compiler, VirtualMachine, VmThreadsSupervisor ]}}.

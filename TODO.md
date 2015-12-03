@@ -5,9 +5,11 @@
 - [ ] *Virtual Machine* facility.
   - [x] Server and helpers API.
   - [x] Internal representation, preprocessing and stages.
-    - [ ] Internal structure for the VM (different than interpreter one).
     - [x] Translating opcodes to IR (*Internal representation*).
-    - [ ] Introducing conception of stages.
+    - [x] Different supervisor (`simple_one_for_one`) which manages VM threads.
+    - [x] Different process for representing VM thread.
+    - [ ] Internal structure for the VM (different than interpreter one).
+    - [ ] Introducing concept of stages in the VM tool.
   - [ ] *Heuristic* optimizations.
     - [ ] Rolling up increments / decrements.
     - [ ] Rolling up pointer movements.

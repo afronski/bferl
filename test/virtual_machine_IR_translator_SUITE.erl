@@ -43,14 +43,14 @@ loop_opcodes_should_contain_proper_index(_Context) ->
 programs_with_valid_loops_should_be_translated(_Context) ->
     ?assertEqual(true,
                  proper:quickcheck(brainfuck_program_model:prop_programs_with_proper_loops_should_be_translated(),
-                                   [ {to_file, user}, {numtests, 1000}, {constraint_tries, 100} ])).
+                                   [ {to_file, user}, {numtests, 1000}, {constraint_tries, 200} ])).
 
 programs_without_loops_should_be_translated(_Context) ->
     ?assertEqual(true,
                  proper:quickcheck(brainfuck_program_model:prop_programs_without_loops_should_be_translated(),
-                                   [ {to_file, user}, {numtests, 1000}, {constraint_tries, 100} ])).
+                                   [ {to_file, user}, {numtests, 1000}, {constraint_tries, 200} ])).
 
 programs_with_invalid_loops_should_not_be_translated(_Context) ->
     ?assertEqual(true,
                  proper:quickcheck(brainfuck_program_model:prop_programs_with_improper_loops_should_not_be_translated(),
-                                   [ {to_file, user}, {numtests, 1000}, {constraint_tries, 100} ])).
+                                   [ {to_file, user}, {numtests, 1000}, {constraint_tries, 200} ])).
