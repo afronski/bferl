@@ -12,6 +12,8 @@
 -type ir_program() :: list(ir_opcode()).
 
 -type jump() :: non_neg_integer().
+-type index() :: pos_integer().
+-type stack() :: list(index()).
 -type jump_table() :: list(jump()).
 
 -type token() :: string().
@@ -20,9 +22,22 @@
 -type translation_result() :: {translation_suceeded, ir_program()} |
                               translation_error.
 
+-spec build_jump_entry({index(), token()}, {array:array(index()), stack()}) -> {array:array(index()), stack()}.
+build_jump_entry({N, "]"}, {Array, [H | StartLoops]}) ->
+    ClosedUpdated = array:set(N - 1, H, Array),
+    OpenedUpdated = array:set(H - 1, N, ClosedUpdated),
+    {OpenedUpdated, StartLoops};
+build_jump_entry({N, "["}, {Array, StartLoops})       -> {Array, [N | StartLoops]};
+build_jump_entry(_, {Array, StartLoops})              -> {Array, StartLoops}.
+
 -spec build_jump_table(program()) -> jump_table().
 build_jump_table(ValidProgram) ->
-    lists:duplicate(length(ValidProgram), 0).
+    ProgramWithIndexes = lists:zip(lists:seq(1, length(ValidProgram)), ValidProgram),
+    Array = array:new(length(ValidProgram), [fixed, {default, 0}]),
+
+    {JumpArray, []} = lists:foldl(fun build_jump_entry/2, {Array, []}, ProgramWithIndexes),
+
+    array:to_list(JumpArray).
 
 -spec remapping(program()) -> ir_program().
 remapping(ValidProgram) ->

@@ -7,7 +7,7 @@
 -export([ prop_programs_without_loops_should_have_IC_and_IP_equal_to_program_length/0,
           prop_programs_with_proper_loops_should_finish_in_finite_time/0,
           prop_programs_with_improper_loops_should_not_be_translated/0,
-          prop_programs_without_loops_should_be_always_translated/0 ]).
+          prop_programs_without_loops_should_be_translated/0 ]).
 
 %% Types of tokens and programs.
 
@@ -47,6 +47,14 @@ prop_programs_with_proper_loops_should_finish_in_finite_time() ->
                 Output#interpreter.instructions_pointer =:= length(Program) + 1
             end).
 
+prop_programs_with_proper_loops_should_be_translated() ->
+    ?FORALL(Program, program_with_valid_loops(),
+            begin
+                {translation_suceeded, Result} = bferl_vm_ir_translator:translate(to_tokens(Program)),
+
+                (length(Result) =:= length(Program))
+            end).
+
 prop_programs_with_improper_loops_should_not_be_translated() ->
     ?FORALL(Program, program_with_invalid_loops(),
             begin
@@ -55,7 +63,7 @@ prop_programs_with_improper_loops_should_not_be_translated() ->
                 Result =:= translation_error
             end).
 
-prop_programs_without_loops_should_be_always_translated() ->
+prop_programs_without_loops_should_be_translated() ->
     ?FORALL(Program, pure_program(),
             begin
                 {translation_suceeded, Result} = bferl_vm_ir_translator:translate(to_tokens(Program)),
