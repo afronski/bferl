@@ -8,6 +8,8 @@
 
 Each service (*interpreter* without *REPL*, *compiler* and *virtual machine*) are gathered into one logical group called *tools*. Basically, each one is isolated from the others and crashing one of them do not affect others, so they can restart individually without any problems. Each facility in this logical group is an implementation of `gen_server`.
 
+There is one additional facility for *Virtual Machine* subsystem called `bferl_vm_threads_sup` - if you are interested in details, you can read about it [here](/docs/VirtualMachine.md).
+
 Tools and *I/O* subsystem have a different supervisors in order differentiate restart strategies.
 
 ## Common Facilities
