@@ -53,21 +53,23 @@ translate(Program) ->
     end.
 
 -spec to_opcode(token()) -> ir_opcode().
-to_opcode("+") -> {add, 1};
-to_opcode("-") -> {sub, 1};
+to_opcode("+") -> {add, r0, 1};
+to_opcode("-") -> {add, r0, -1};
 
-to_opcode("<") -> {left, 1};
-to_opcode(">") -> {right, 1};
+to_opcode("<") -> {add, ir0, 1};
+to_opcode(">") -> {add, ir0, -1};
 
-to_opcode(",") -> in;
-to_opcode(".") -> out;
+to_opcode(",") -> {call, 1};
+to_opcode(".") -> {call, 2};
 
-to_opcode("[") -> {test, 0};
+to_opcode("Y") -> {call, 3};
+
+to_opcode("[") -> {test, r0, 0};
 to_opcode("]") -> {jmp, 0}.
 
 -spec correct_jump({jump(), ir_opcode()}) -> ir_opcode().
 correct_jump({N, {jmp, _}}) -> {jmp, N};
-correct_jump({N, {test, _}}) -> {test, N};
+correct_jump({N, {test, r0, _}}) -> {test, r0, N};
 correct_jump({_, Opcode}) -> Opcode.
 
 -spec loop_stack_should_be_empty(program()) -> boolean().
