@@ -38,11 +38,6 @@ execute_when_loaded(true, State, StartupFlags) ->
 
     NewState = State#{"startup_flags" => StartupFlags},
 
-    %% TODO: IR is more readable and verbose than BF, and it contains more generic operations like add, sub, jmp.
-    %% TODO: Optimizer, and IR compiler as separate processes.
-    %% TODO: Staged compilation is just a composition of calls.
-    %% TODO: Storing intermediate and optimized versions of programs in ETS, table owner is tools sup.
-
     {{started, Type, {load, LoadingFlags}, {start, StartupFlags}}, NewState}.
 
 init(empty) ->

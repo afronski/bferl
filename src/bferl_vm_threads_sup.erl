@@ -11,15 +11,11 @@ start_new_thread(Context) ->
     supervisor:start_child(?MODULE, [ Context ]).
 
 init(_Args) ->
-    RestartStrategy = simple_one_for_one,
-    MaxRestarts = 0,
-    MaxSecondsBetweenRestarts = 1,
+    RestartStrategy = {simple_one_for_one, 0, 1},
 
-    Flags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
+    Threads = {bferl_vm_thread, {bferl_vm_thread, start_link, []},
+               temporary, brutal_kill, worker, [ bferl_vm_thread ]},
 
-    Element = {bferl_vm_thread,
-               {bferl_vm_thread, start_link, []},
-               temporary, brutal_kill, worker,
-               [ bferl_vm_thread ]},
+    Children = [ Threads ],
 
-    {ok, {Flags, [ Element ]}}.
+    {ok, {RestartStrategy, Children}}.

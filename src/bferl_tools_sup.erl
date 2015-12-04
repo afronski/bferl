@@ -8,34 +8,20 @@ start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init(_Args) ->
-    RestartStrategy = one_for_one,
-    MaxRestarts = 5,
-    MaxSecondsBetweenRestarts = 5,
+    RestartStrategy = {one_for_one, 0, 1},
 
-    Flags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
+    Interpreter = {bferl_tools_interpreter, {bferl_tools_interpreter, start_link, []},
+                   permanent, 2000, worker, [ bferl_tools_interpreter ]},
 
-    Restart = permanent,
-    Shutdown = 1000,
-    DefaultType = worker,
+    Compiler = {bferl_tools_compiler, {bferl_tools_compiler, start_link, []},
+                permanent, 2000, worker, [ bferl_tools_compiler ]},
 
-    Interpreter = {bferl_tools_interpreter,
-                   {bferl_tools_interpreter, start_link, []},
-                   Restart, Shutdown, DefaultType,
-                   [ bferl_tools_interpreter ]},
+    VirtualMachine = {bferl_tools_virtual_machine, {bferl_tools_virtual_machine, start_link, []},
+                      permanent, 2000, worker, [ bferl_tools_virtual_machine ]},
 
-    Compiler = {bferl_tools_compiler,
-                {bferl_tools_compiler, start_link, []},
-                Restart, Shutdown, DefaultType,
-                [ bferl_tools_compiler ]},
+    VmThreadsSupervisor = {bferl_vm_threads_sup, {bferl_vm_threads_sup, start_link, []},
+                           permanent, 2000, supervisor, [ bferl_vm_threads_sup ]},
 
-    VirtualMachine = {bferl_tools_virtual_machine,
-                      {bferl_tools_virtual_machine, start_link, []},
-                      Restart, Shutdown, DefaultType,
-                      [ bferl_tools_virtual_machine ]},
+    Children = [ Interpreter, Compiler, VirtualMachine, VmThreadsSupervisor ],
 
-    VmThreadsSupervisor = {bferl_vm_threads_sup,
-                           {bferl_vm_threads_sup, start_link, []},
-                           Restart, Shutdown, supervisor,
-                           [ bferl_vm_threads_sup ]},
-
-    {ok, {Flags, [ Interpreter, Compiler, VirtualMachine, VmThreadsSupervisor ]}}.
+    {ok, {RestartStrategy, Children}}.

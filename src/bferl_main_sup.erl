@@ -8,24 +8,14 @@ start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-    RestartStrategy = one_for_all,
-    MaxRestarts = 5,
-    MaxSecondsBetweenRestarts = 5,
+    RestartStrategy = {one_for_all, 0, 1},
 
-    Flags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
+    IoSubsystem = {bferl_io, {bferl_io, start_link, []},
+                   permanent, 2000, worker, [ bferl_io ]},
 
-    Restart = permanent,
-    Shutdown = 1000,
-    Type = worker,
+    ToolsSupervisor = {bferl_tools_sup, {bferl_tools_sup, start_link, []},
+                       permanent, 2000, worker, [ bferl_tools_sup ]},
 
-    IoSubsystem = {bferl_io,
-                   {bferl_io, start_link, []},
-                   Restart, Shutdown, Type,
-                   [ bferl_io ]},
+    Children = [ IoSubsystem, ToolsSupervisor ],
 
-    ToolsSupervisor = {bferl_tools_sup,
-                       {bferl_tools_sup, start_link, []},
-                       Restart, Shutdown, Type,
-                       [ bferl_tools_sup ]},
-
-    {ok, {Flags, [ IoSubsystem, ToolsSupervisor ]}}.
+    {ok, {RestartStrategy, Children}}.
