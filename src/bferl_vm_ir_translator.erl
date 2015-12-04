@@ -2,27 +2,25 @@
 
 -export([ translate/1 ]).
 
--export_type([ ir_opcode/0, ir_program/0 ]).
-
--type ir_opcode() :: [ {add, integer()} | {sub, integer()} |
-                       {left, pos_integer()} | {right, pos_integer()} |
-                       {jmp, pos_integer()} | {test, pos_integer()} |
-                       in | out
-                     ].
+-type ir_opcode() :: {add, ir0 | ir, -1 | 1}  |
+                     {test, r0, 0}            |
+                     {jmp, 0}                 |
+                     {call, 1 | 2 | 3}.
 -type ir_program() :: list(ir_opcode()).
 
 -type jump() :: non_neg_integer().
 -type index() :: pos_integer().
 -type stack() :: list(index()).
+
+-type tmp_jump_table() :: {array:array(index()), stack()}.
 -type jump_table() :: list(jump()).
 
--type token() :: string().
--type program() :: list(token).
+-type program() :: list(bferl_types:opcode()).
 
 -type translation_result() :: {translation_suceeded, ir_program()} |
                               translation_error.
 
--spec build_jump_entry({index(), token()}, {array:array(index()), stack()}) -> {array:array(index()), stack()}.
+-spec build_jump_entry({index(), bferl_types:opcode()}, tmp_jump_table()) -> tmp_jump_table().
 build_jump_entry({N, "]"}, {Array, [H | StartLoops]}) ->
     ClosedUpdated = array:set(N - 1, H, Array),
     OpenedUpdated = array:set(H - 1, N, ClosedUpdated),
@@ -52,7 +50,7 @@ translate(Program) ->
         _     -> {translation_suceeded, remapping(Program)}
     end.
 
--spec to_opcode(token()) -> ir_opcode().
+-spec to_opcode(bferl_types:opcode()) -> ir_opcode().
 to_opcode("+") -> {add, r0, 1};
 to_opcode("-") -> {add, r0, -1};
 
@@ -77,7 +75,7 @@ loop_stack_should_be_empty(Program) ->
     Stack = lists:foldl(fun check_token/2, [], Program),
     length(Stack) =:= 0.
 
--spec check_token(token(), program()) -> program().
+-spec check_token(bferl_types:opcodes(), program()) -> program().
 check_token("[", Stack)           -> [ "[" | Stack ];
 
 check_token("]", [ "[" | Stack ]) -> Stack;

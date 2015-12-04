@@ -42,7 +42,7 @@ get_memory_cell(CellIndex, State) when CellIndex >= 0, CellIndex < ?MEMORY_SIZE 
     array:get(CellIndex, State#interpreter.memory);
 get_memory_cell(_CellIndex, _State) -> 0.
 
--spec get_opcode(pos_integer(), bferl_types:interpreter_state()) -> bferl_types:opcodes().
+-spec get_opcode(pos_integer(), bferl_types:interpreter_state()) -> bferl_types:opcode().
 get_opcode(Index, State) when Index >= 1, Index =< length(State#interpreter.instructions) ->
     lists:nth(Index, State#interpreter.instructions);
 get_opcode(_Index, _State) -> "".
@@ -86,7 +86,7 @@ run(State) ->
 %% --
 %% Brainfuck
 
--spec do(bferl_types:opcodes(), bferl_types:interpreter_state()) -> bferl_types:interpreter_state().
+-spec do(bferl_types:opcode(), bferl_types:interpreter_state()) -> bferl_types:interpreter_state().
 do("+", InputState) ->
     CellIndex = InputState#interpreter.memory_pointer,
     Cell = get_memory_cell(CellIndex, InputState),

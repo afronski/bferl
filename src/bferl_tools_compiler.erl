@@ -52,7 +52,7 @@ codegen({ok, Expressions}, Name, Type, Flags) ->
     AtomName = list_to_existing_atom(Name),
 
     case core_lint:module(CoreRepresentation) of
-        {ok, [{AtomName, []}]} ->
+        {ok, [{AtomName, _}]} ->
             case proplists:lookup(debug, Flags) of
                 {debug, _} -> io:format("--VALIDATION: SUCCESS----------------~n", []);
                 _          -> nop
