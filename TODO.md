@@ -9,14 +9,17 @@
     - [x] Different supervisor (`simple_one_for_one`) which manages VM threads.
     - [x] Different process for representing VM thread.
     - [x] Internal structure for the VM (different than interpreter one).
+    - [x] Preparing main logic of execution.
+    - [x] Implementation of basic opcodes (all besides loops and calls).
+    - [ ] Implementation for looping constructs.
+    - [ ] Implementation for call constructs.
     - [ ] Introducing concept of stages in the VM tool.
   - [ ] *Heuristic* optimizations.
     - [x] Building up jump table first.
     - [ ] Rolling up increments / decrements.
     - [ ] Rolling up pointer movements.
     - [ ] Replacing reading from input with constant loading when tape provided.
-    - [ ] *Hot Code* detection.
-      - [ ] Loops unwinding and body compilation.
+    - [ ] Using `jnze` instead of plain `jmp` in optimization stage.
 
 ## Next phase - *Brainfork*
 
@@ -34,7 +37,7 @@
 - [ ] *Brainfork* internals.
   - [ ] Example session
 
-## Next phase - Improvements
+## Improvements
 
 - [ ] Improvements:
   - [ ] *REPL* and *Interpreter* - Detecting infinite loop based on *IC* observation.
