@@ -18,26 +18,42 @@ all() ->
       programs_with_invalid_loops_should_not_be_translated ].
 
 individual_opcodes_should_be_translated_properly(_Context) ->
-    ?assertEqual({translation_suceeded, [ {add, r0, 1} ]}, bferl_vm_ir_translator:translate(["+"])),
-    ?assertEqual({translation_suceeded, [ {add, r0, -1} ]}, bferl_vm_ir_translator:translate(["-"])),
+    ?assertEqual({translation_suceeded, [ {load, ir0, r0}, {add, r0, 1}, {store, r0, ir0} ]},
+                 bferl_vm_ir_translator:translate(["+"])),
+
+    ?assertEqual({translation_suceeded, [ {load, ir0, r0}, {sub, r0, 1}, {store, r0, ir0} ]},
+                 bferl_vm_ir_translator:translate(["-"])),
 
     ?assertEqual({translation_suceeded, [ {add, ir0, 1} ]}, bferl_vm_ir_translator:translate(["<"])),
-    ?assertEqual({translation_suceeded, [ {add, ir0, -1} ]}, bferl_vm_ir_translator:translate([">"])),
+    ?assertEqual({translation_suceeded, [ {sub, ir0, 1} ]}, bferl_vm_ir_translator:translate([">"])),
 
-    ?assertEqual({translation_suceeded, [ {call, 1} ]}, bferl_vm_ir_translator:translate([","])),
-    ?assertEqual({translation_suceeded, [ {call, 2} ]}, bferl_vm_ir_translator:translate(["."])).
+    ?assertEqual({translation_suceeded, [ {call, in} ]}, bferl_vm_ir_translator:translate([","])),
+    ?assertEqual({translation_suceeded, [ {call, out} ]}, bferl_vm_ir_translator:translate(["."])),
+    ?assertEqual({translation_suceeded, [ {call, fork} ]}, bferl_vm_ir_translator:translate(["Y"])).
 
 loop_opcodes_should_contain_proper_index(_Context) ->
-    ?assertEqual({translation_suceeded, [ {test, r0, 2}, {jmp, 1} ]},
+    ?assertEqual({translation_suceeded, [ {load, ir0, r0}, {jze, 4},
+                                          {jmp, 1} ]},
                  bferl_vm_ir_translator:translate(["[", "]"])),
 
-    ?assertEqual({translation_suceeded, [ {test, r0, 2}, {jmp, 1}, {test, r0, 4}, {jmp, 3} ]},
+    ?assertEqual({translation_suceeded, [ {load, ir0, r0}, {jze, 4},
+                                          {jmp, 1},
+                                          {load, ir0, r0}, {jze, 7},
+                                          {jmp, 4} ]},
                  bferl_vm_ir_translator:translate(["[", "]", "[", "]"])),
 
-    ?assertEqual({translation_suceeded, [ {test, r0, 4}, {test, r0, 3}, {jmp, 2}, {jmp, 1} ]},
+    ?assertEqual({translation_suceeded, [ {load, ir0, r0}, {jze, 7},
+                                          {load, ir0, r0}, {jze, 6},
+                                          {jmp, 3},
+                                          {jmp, 1} ]},
                  bferl_vm_ir_translator:translate(["[", "[", "]", "]"])),
 
-    ?assertEqual({translation_suceeded, [ {test, r0, 4}, {test, r0, 3}, {jmp, 2}, {jmp, 1}, {test, r0, 6}, {jmp, 5} ]},
+    ?assertEqual({translation_suceeded, [ {load, ir0, r0}, {jze, 7},
+                                          {load, ir0, r0}, {jze, 6},
+                                          {jmp, 3},
+                                          {jmp, 1},
+                                          {load, ir0, r0}, {jze, 10},
+                                          {jmp, 7} ]},
                  bferl_vm_ir_translator:translate(["[", "[", "]", "]", "[", "]"])).
 
 programs_with_valid_loops_should_be_translated(_Context) ->

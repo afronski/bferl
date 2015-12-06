@@ -51,8 +51,9 @@ prop_programs_with_proper_loops_should_be_translated() ->
     ?FORALL(Program, program_with_valid_loops(),
             begin
                 {translation_suceeded, Result} = bferl_vm_ir_translator:translate(to_tokens(Program)),
+                Count = count_opcodes(Program),
 
-                (length(Result) =:= length(Program))
+                length(Result) =:= Count
             end).
 
 prop_programs_with_improper_loops_should_not_be_translated() ->
@@ -67,8 +68,9 @@ prop_programs_without_loops_should_be_translated() ->
     ?FORALL(Program, pure_program(),
             begin
                 {translation_suceeded, Result} = bferl_vm_ir_translator:translate(to_tokens(Program)),
+                Count = count_opcodes(Program),
 
-                length(Result) =:= length(Program)
+                length(Result) =:= Count
             end).
 
 %% Test Helpers.
@@ -116,3 +118,19 @@ type_to_token(end_while) -> "]";
 
 type_to_token(out)       -> ".";
 type_to_token(in)        -> ",".
+
+-spec count_opcodes(program()) -> non_neg_integer().
+count_opcodes(Program) ->
+    lists:foldl(fun count_opcode/2, 0, Program).
+
+-spec count_opcode(token(), non_neg_integer()) -> non_neg_integer().
+count_opcode(dec, Acc)       -> Acc + 3;
+count_opcode(inc, Acc)       -> Acc + 3;
+count_opcode(left, Acc)      -> Acc + 1;
+count_opcode(right, Acc)     -> Acc + 1;
+
+count_opcode(while, Acc)     -> Acc + 2;
+count_opcode(end_while, Acc) -> Acc + 1;
+
+count_opcode(out, Acc)       -> Acc + 1;
+count_opcode(in, Acc)        -> Acc + 1.

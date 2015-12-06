@@ -6,5 +6,6 @@
                                           memory = ?VM_EMPTY_MEMORY :: array:array(integer()),
                                           r0 = 0                    :: integer(),
                                           ir0 = 0                   :: non_neg_integer(),
-                                          ic = 0                    :: non_neg_integer()
+                                          ic = 0                    :: non_neg_integer(),
+                                          zf = 0                    :: 0 | 1
                                         }).

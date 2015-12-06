@@ -6,7 +6,7 @@
 -export_type([ io_callbacks/0,
                program/0, opcode/0, instructions/0, tokens/0,
                interpreter_state/0,
-               ir_opcode/0, ir_program/0,
+               ir_calls/0, ir_opcode/0, ir_program/0,
                virtual_machine_state/0 ]).
 
 -type optional_fun() :: undefined | fun().
@@ -19,12 +19,17 @@
 -type tokens() :: sets:set(string()).
 -type interpreter_state() :: #interpreter{}.
 
--type ir_opcode() :: {add, ir0 | ir, integer()} |
-                     {test, r0, pos_integer()} |
+-type ir_calls() ::  in | out | fork.
+-type ir_opcode() :: {add, r0, integer()} |
+                     {sub, r0, integer()} |
+                     {test, ir0 | r0, ir0 | r0} |
+                     {jze, pos_integer()} |
                      {jmp, pos_integer()} |
-                     {call, 1 | 2 | 3} |
-                     {const, ir0 | ir, integer()} |
-                     {mov, r0, ir0} |
-                     {mov, ir0, r0}.
+                     {jnze, pos_integer()} |
+                     {const, ir0, non_neg_integer()} |
+                     {const, r0, integer()} |
+                     {load, ir0, r0} |
+                     {store, r0, ir0} |
+                     {call, ir_calls()}.
 -type ir_program() :: list(ir_opcode()).
 -type virtual_machine_state() :: #register_based_virtual_machine{}.

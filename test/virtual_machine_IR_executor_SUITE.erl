@@ -11,6 +11,7 @@
           virtual_machine_state_should_have_fixed_memory_size/1,
           virtual_machine_state_should_have_two_registers/1,
           virtual_machine_state_should_have_intruction_counter/1,
+          virtual_machine_state_should_have_zero_flag/1,
           jump_table_should_be_built_automatically_after_starting_up_machine/1,
           values_in_jump_table_should_correspond_to_initial_pass/1 ]).
 
@@ -20,6 +21,7 @@ all() ->
       virtual_machine_state_should_have_fixed_memory_size,
       virtual_machine_state_should_have_two_registers,
       virtual_machine_state_should_have_intruction_counter,
+      virtual_machine_state_should_have_zero_flag,
       jump_table_should_be_built_automatically_after_starting_up_machine,
       values_in_jump_table_should_correspond_to_initial_pass ].
 
@@ -29,10 +31,10 @@ virtual_machine_state_should_be_returned_after_start_up(_Context) ->
     ?assertEqual(true, is_record(Machine, register_based_virtual_machine)).
 
 virtual_machine_state_should_contain_delivered_program(_Context) ->
-    Machine = bferl_vm_ir_executor:start_machine([ {add, r0, 3} ]),
+    Machine = bferl_vm_ir_executor:start_machine([ {add, ir0, 0} ]),
 
     ?assertEqual(1, length(Machine#register_based_virtual_machine.ir_code)),
-    ?assertEqual({add, r0, 3}, hd(Machine#register_based_virtual_machine.ir_code)).
+    ?assertEqual({add, ir0, 0}, hd(Machine#register_based_virtual_machine.ir_code)).
 
 virtual_machine_state_should_have_fixed_memory_size(_Context) ->
     Machine = bferl_vm_ir_executor:start_machine([]),
@@ -49,6 +51,11 @@ virtual_machine_state_should_have_intruction_counter(_Context) ->
     Machine = bferl_vm_ir_executor:start_machine([]),
 
     ?assertEqual(0, Machine#register_based_virtual_machine.ic).
+
+virtual_machine_state_should_have_zero_flag(_Context) ->
+    Machine = bferl_vm_ir_executor:start_machine([]),
+
+    ?assertEqual(0, Machine#register_based_virtual_machine.zf).
 
 jump_table_should_be_built_automatically_after_starting_up_machine(_Context) ->
     Machine = bferl_vm_ir_executor:start_machine([]),
