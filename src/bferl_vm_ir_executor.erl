@@ -2,7 +2,9 @@
 
 -include("../include/virtual_machine_definitions.hrl").
 
--export([ start_machine/1, step/1 ]).
+-export([ start_machine/1, step/1, run/1 ]).
+
+-type step_result() :: bferl_types:virtual_machine_state() | {finished, bferl_types:virtual_machine_state()}.
 
 -spec build_jump_entry({pos_integer(), bferl_types:ir_opcode()}, map()) -> map().
 build_jump_entry({I, {jze, N}}, Jumps) -> Jumps#{ I => N };
@@ -35,9 +37,17 @@ execute({load, ir0, r0}, Machine) ->
 execute({add, ir0, N}, Machine) ->
     NewIR0 = Machine#register_based_virtual_machine.ir0 + N,
 
+    Machine#register_based_virtual_machine{ir0 = NewIR0};
+
+execute({sub, ir0, N}, Machine) ->
+    NewIR0 = Machine#register_based_virtual_machine.ir0 - N,
+
     Machine#register_based_virtual_machine{ir0 = NewIR0}.
 
--spec step(bferl_types:virtual_machine_state()) -> bferl_types:virtual_machine_state().
+-spec step(bferl_types:virtual_machine_state()) -> step_result().
+step(Step) when Step#register_based_virtual_machine.ip > length(Step#register_based_virtual_machine.ir_code) ->
+    {finished, Step};
+
 step(Machine) ->
     IP = Machine#register_based_virtual_machine.ip,
     IC = Machine#register_based_virtual_machine.ic,
@@ -47,3 +57,10 @@ step(Machine) ->
     Modified = execute(Instruction, Machine),
 
     Modified#register_based_virtual_machine{ip = IP + 1, ic = IC + 1}.
+
+-spec internal_run(step_result()) -> bferl_types:virtual_machine_state().
+internal_run({finished, Result})  -> Result;
+internal_run(Intermediate)        -> internal_run(step(Intermediate)).
+
+-spec run(bferl_types:virtual_machine_state()) -> bferl_types:virtual_machine_state().
+run(Machine) -> internal_run(step(Machine)).

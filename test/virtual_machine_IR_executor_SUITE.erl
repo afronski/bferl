@@ -16,7 +16,9 @@
           jump_table_should_be_built_automatically_after_starting_up_machine/1,
           values_in_jump_table_should_correspond_to_initial_pass/1,
           instruction_pointer_and_counter_should_be_increased_after_step/1,
+          instruction_pointer_and_counter_should_be_increased_after_run/1,
           address_should_be_updated_when_we_add_offset_to_it/1,
+          address_should_be_updated_when_we_perform_more_complicated_operations/1,
           value_should_be_loaded_from_corresponding_memory_address/1,
           zero_flag_should_be_set_when_value_loaded_to_r0_is_equal_to_zero/1,
           zero_flag_should_not_be_set_when_value_loaded_to_r0_is_not_equal_to_zero/1 ]).
@@ -31,8 +33,10 @@ all() ->
       virtual_machine_state_should_have_zero_flag,
       jump_table_should_be_built_automatically_after_starting_up_machine,
       instruction_pointer_and_counter_should_be_increased_after_step,
+      instruction_pointer_and_counter_should_be_increased_after_run,
       values_in_jump_table_should_correspond_to_initial_pass,
       address_should_be_updated_when_we_add_offset_to_it,
+      address_should_be_updated_when_we_perform_more_complicated_operations,
       value_should_be_loaded_from_corresponding_memory_address,
       zero_flag_should_be_set_when_value_loaded_to_r0_is_equal_to_zero,
       zero_flag_should_not_be_set_when_value_loaded_to_r0_is_not_equal_to_zero ].
@@ -102,11 +106,24 @@ instruction_pointer_and_counter_should_be_increased_after_step(_Context) ->
     ?assertEqual(2, Final#register_based_virtual_machine.ip),
     ?assertEqual(1, Final#register_based_virtual_machine.ic).
 
+instruction_pointer_and_counter_should_be_increased_after_run(_Context) ->
+    Machine = bferl_vm_ir_executor:start_machine([ {add, ir0, 0}, {add, ir0, 0} ]),
+    Final = bferl_vm_ir_executor:run(Machine),
+
+    ?assertEqual(3, Final#register_based_virtual_machine.ip),
+    ?assertEqual(2, Final#register_based_virtual_machine.ic).
+
 address_should_be_updated_when_we_add_offset_to_it(_Context) ->
     Machine = bferl_vm_ir_executor:start_machine([ {add, ir0, 1} ]),
-    Final = bferl_vm_ir_executor:step(Machine),
+    Final = bferl_vm_ir_executor:run(Machine),
 
     ?assertEqual(1, Final#register_based_virtual_machine.ir0).
+
+address_should_be_updated_when_we_perform_more_complicated_operations(_Context) ->
+    Machine = bferl_vm_ir_executor:start_machine([ {add, ir0, 5}, {sub, ir0, 1}, {add, ir0, -1}, {sub, ir0, -2} ]),
+    Final = bferl_vm_ir_executor:run(Machine),
+
+    ?assertEqual(5, Final#register_based_virtual_machine.ir0).
 
 value_should_be_loaded_from_corresponding_memory_address(_Context) ->
     Machine = bferl_vm_ir_executor:start_machine([ {add, ir0, 1}, {load, ir0, r0} ]),
@@ -114,14 +131,13 @@ value_should_be_loaded_from_corresponding_memory_address(_Context) ->
     Memory = Machine#register_based_virtual_machine.memory,
     Modified = Machine#register_based_virtual_machine{memory = array:set(1, 100, Memory)},
 
-    Step = bferl_vm_ir_executor:step(Modified),
-    Final = bferl_vm_ir_executor:step(Step),
+    Final = bferl_vm_ir_executor:run(Modified),
 
     ?assertEqual(100, Final#register_based_virtual_machine.r0).
 
 zero_flag_should_be_set_when_value_loaded_to_r0_is_equal_to_zero(_Context) ->
     Machine = bferl_vm_ir_executor:start_machine([ {load, ir0, r0} ]),
-    Final = bferl_vm_ir_executor:step(Machine),
+    Final = bferl_vm_ir_executor:run(Machine),
 
     ?assertEqual(1, Final#register_based_virtual_machine.zf).
 
@@ -131,6 +147,6 @@ zero_flag_should_not_be_set_when_value_loaded_to_r0_is_not_equal_to_zero(_Contex
     Memory = Machine#register_based_virtual_machine.memory,
     Modified = Machine#register_based_virtual_machine{memory = array:set(0, 1, Memory)},
 
-    Final = bferl_vm_ir_executor:step(Modified),
+    Final = bferl_vm_ir_executor:run(Modified),
 
     ?assertEqual(0, Final#register_based_virtual_machine.zf).
