@@ -2,12 +2,6 @@
 
 -export([ translate/1 ]).
 
--type ir_opcode() :: {add, ir0 | ir, -1 | 1}  |
-                     {test, r0, 0}            |
-                     {jmp, 0}                 |
-                     {call, 1 | 2 | 3}.
--type ir_program() :: list(ir_opcode()).
-
 -type jump() :: non_neg_integer().
 -type index() :: pos_integer().
 -type stack() :: list(index()).
@@ -17,7 +11,7 @@
 
 -type program() :: list(bferl_types:opcode()).
 
--type translation_result() :: {translation_suceeded, ir_program()} |
+-type translation_result() :: {translation_suceeded, bferl_types:ir_program()} |
                               translation_error.
 
 -spec build_jump_entry({index(), bferl_types:opcode()}, tmp_jump_table()) -> tmp_jump_table().
@@ -37,7 +31,7 @@ build_jump_table(ValidProgram) ->
 
     array:to_list(JumpArray).
 
--spec remapping(program()) -> ir_program().
+-spec remapping(program()) -> bferl_types:ir_program().
 remapping(ValidProgram) ->
     Opcodes = lists:map(fun to_opcode/1, ValidProgram),
     JumpTable = build_jump_table(ValidProgram),
@@ -50,7 +44,7 @@ translate(Program) ->
         _     -> {translation_suceeded, remapping(Program)}
     end.
 
--spec to_opcode(bferl_types:opcode()) -> ir_opcode().
+-spec to_opcode(bferl_types:opcode()) -> bferl_types:ir_opcode().
 to_opcode("+") -> {add, r0, 1};
 to_opcode("-") -> {add, r0, -1};
 
@@ -65,7 +59,7 @@ to_opcode("Y") -> {call, 3};
 to_opcode("[") -> {test, r0, 0};
 to_opcode("]") -> {jmp, 0}.
 
--spec correct_jump({jump(), ir_opcode()}) -> ir_opcode().
+-spec correct_jump({jump(), bferl_types:ir_opcode()}) -> bferl_types:ir_opcode().
 correct_jump({N, {jmp, _}}) -> {jmp, N};
 correct_jump({N, {test, r0, _}}) -> {test, r0, N};
 correct_jump({_, Opcode}) -> Opcode.

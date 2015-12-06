@@ -8,12 +8,12 @@
     - [x] Translating opcodes to IR (*Internal representation*).
     - [x] Different supervisor (`simple_one_for_one`) which manages VM threads.
     - [x] Different process for representing VM thread.
-    - [ ] Internal structure for the VM (different than interpreter one).
+    - [x] Internal structure for the VM (different than interpreter one).
     - [ ] Introducing concept of stages in the VM tool.
   - [ ] *Heuristic* optimizations.
+    - [x] Building up jump table first.
     - [ ] Rolling up increments / decrements.
     - [ ] Rolling up pointer movements.
-    - [ ] Building up jump table first.
     - [ ] Replacing reading from input with constant loading when tape provided.
     - [ ] *Hot Code* detection.
       - [ ] Loops unwinding and body compilation.
