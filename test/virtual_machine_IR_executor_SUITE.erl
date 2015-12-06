@@ -19,9 +19,13 @@
           instruction_pointer_and_counter_should_be_increased_after_run/1,
           address_should_be_updated_when_we_add_offset_to_it/1,
           address_should_be_updated_when_we_perform_more_complicated_operations/1,
+          register_should_be_updated_when_we_add_one_to_it/1,
+          register_should_be_updated_when_we_perform_more_complicated_operations/1,
           value_should_be_loaded_from_corresponding_memory_address/1,
           zero_flag_should_be_set_when_value_loaded_to_r0_is_equal_to_zero/1,
-          zero_flag_should_not_be_set_when_value_loaded_to_r0_is_not_equal_to_zero/1 ]).
+          zero_flag_should_not_be_set_when_value_loaded_to_r0_is_not_equal_to_zero/1,
+          storing_should_save_provided_value_from_register_to_corresponding_memory_address/1,
+          constants_should_be_loaded_to_both_registers_with_one_instruction/1 ]).
 
 all() ->
     [ virtual_machine_state_should_be_returned_after_start_up,
@@ -37,9 +41,13 @@ all() ->
       values_in_jump_table_should_correspond_to_initial_pass,
       address_should_be_updated_when_we_add_offset_to_it,
       address_should_be_updated_when_we_perform_more_complicated_operations,
+      register_should_be_updated_when_we_add_one_to_it,
+      register_should_be_updated_when_we_perform_more_complicated_operations,
       value_should_be_loaded_from_corresponding_memory_address,
       zero_flag_should_be_set_when_value_loaded_to_r0_is_equal_to_zero,
-      zero_flag_should_not_be_set_when_value_loaded_to_r0_is_not_equal_to_zero ].
+      zero_flag_should_not_be_set_when_value_loaded_to_r0_is_not_equal_to_zero,
+      storing_should_save_provided_value_from_register_to_corresponding_memory_address,
+      constants_should_be_loaded_to_both_registers_with_one_instruction ].
 
 virtual_machine_state_should_be_returned_after_start_up(_Context) ->
     Machine = bferl_vm_ir_executor:start_machine([]),
@@ -120,10 +128,22 @@ address_should_be_updated_when_we_add_offset_to_it(_Context) ->
     ?assertEqual(1, Final#register_based_virtual_machine.ir0).
 
 address_should_be_updated_when_we_perform_more_complicated_operations(_Context) ->
-    Machine = bferl_vm_ir_executor:start_machine([ {add, ir0, 5}, {sub, ir0, 1}, {add, ir0, -1}, {sub, ir0, -2} ]),
+    Machine = bferl_vm_ir_executor:start_machine([ {add, ir0, 5}, {sub, ir0, 1}, {add, ir0, -1}, {sub, ir0, -1} ]),
     Final = bferl_vm_ir_executor:run(Machine),
 
-    ?assertEqual(5, Final#register_based_virtual_machine.ir0).
+    ?assertEqual(4, Final#register_based_virtual_machine.ir0).
+
+register_should_be_updated_when_we_add_one_to_it(_Context) ->
+    Machine = bferl_vm_ir_executor:start_machine([ {add, r0, 1} ]),
+    Final = bferl_vm_ir_executor:run(Machine),
+
+    ?assertEqual(1, Final#register_based_virtual_machine.r0).
+
+register_should_be_updated_when_we_perform_more_complicated_operations(_Context) ->
+    Machine = bferl_vm_ir_executor:start_machine([ {add, r0, 5}, {sub, r0, 1}, {add, r0, -1}, {sub, r0, -1} ]),
+    Final = bferl_vm_ir_executor:run(Machine),
+
+    ?assertEqual(4, Final#register_based_virtual_machine.r0).
 
 value_should_be_loaded_from_corresponding_memory_address(_Context) ->
     Machine = bferl_vm_ir_executor:start_machine([ {add, ir0, 1}, {load, ir0, r0} ]),
@@ -150,3 +170,19 @@ zero_flag_should_not_be_set_when_value_loaded_to_r0_is_not_equal_to_zero(_Contex
     Final = bferl_vm_ir_executor:run(Modified),
 
     ?assertEqual(0, Final#register_based_virtual_machine.zf).
+
+storing_should_save_provided_value_from_register_to_corresponding_memory_address(_Context) ->
+    Machine = bferl_vm_ir_executor:start_machine([ {add, ir0, 1}, {add, r0, 54}, {store, r0, ir0} ]),
+
+    Final = bferl_vm_ir_executor:run(Machine),
+    Memory = Final#register_based_virtual_machine.memory,
+
+    ?assertEqual(54, array:get(1, Memory)).
+
+constants_should_be_loaded_to_both_registers_with_one_instruction(_Context) ->
+    Machine = bferl_vm_ir_executor:start_machine([ {const, ir0, 6}, {const, r0, 10} ]),
+
+    Final = bferl_vm_ir_executor:run(Machine),
+
+    ?assertEqual(6, Final#register_based_virtual_machine.ir0),
+    ?assertEqual(10, Final#register_based_virtual_machine.r0).

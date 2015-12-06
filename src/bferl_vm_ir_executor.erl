@@ -19,7 +19,7 @@ build_jump_table(Program) ->
 -spec start_machine(bferl_types:ir_program()) -> bferl_types:virtual_machine_state().
 start_machine(Program) when is_list(Program) ->
     Jumps = build_jump_table(Program),
-    #register_based_virtual_machine{ ir_code = Program, jmp_table = Jumps }.
+    #register_based_virtual_machine{ir_code = Program, jmp_table = Jumps}.
 
 -spec execute(bferl_types:ir_opcode(), bferl_types:virtual_machine_state()) -> bferl_types:virtual_machine_state().
 execute({load, ir0, r0}, Machine) ->
@@ -34,15 +34,40 @@ execute({load, ir0, r0}, Machine) ->
 
     Machine#register_based_virtual_machine{r0 = NewR0, zf = NewZF};
 
-execute({add, ir0, N}, Machine) ->
+execute({store, r0, ir0}, Machine) ->
+    IR0 = Machine#register_based_virtual_machine.ir0,
+    R0 = Machine#register_based_virtual_machine.r0,
+
+    Memory = Machine#register_based_virtual_machine.memory,
+    NewMemory = array:set(IR0, R0, Memory),
+
+    Machine#register_based_virtual_machine{memory = NewMemory};
+
+execute({add, ir0, N}, Machine) when is_integer(N) ->
     NewIR0 = Machine#register_based_virtual_machine.ir0 + N,
 
     Machine#register_based_virtual_machine{ir0 = NewIR0};
 
-execute({sub, ir0, N}, Machine) ->
+execute({sub, ir0, N}, Machine) when is_integer(N) ->
     NewIR0 = Machine#register_based_virtual_machine.ir0 - N,
 
-    Machine#register_based_virtual_machine{ir0 = NewIR0}.
+    Machine#register_based_virtual_machine{ir0 = NewIR0};
+
+execute({add, r0, N}, Machine) when is_integer(N) ->
+    NewR0 = Machine#register_based_virtual_machine.r0 + N,
+
+    Machine#register_based_virtual_machine{r0 = NewR0};
+
+execute({sub, r0, N}, Machine) when is_integer(N) ->
+    NewR0 = Machine#register_based_virtual_machine.r0 - N,
+
+    Machine#register_based_virtual_machine{r0 = NewR0};
+
+execute({const, ir0, N}, Machine) when N > 0 ->
+    Machine#register_based_virtual_machine{ir0 = N};
+
+execute({const, r0, N}, Machine) when is_integer(N) ->
+    Machine#register_based_virtual_machine{r0 = N}.
 
 -spec step(bferl_types:virtual_machine_state()) -> step_result().
 step(Step) when Step#register_based_virtual_machine.ip > length(Step#register_based_virtual_machine.ir_code) ->

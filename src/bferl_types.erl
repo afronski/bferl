@@ -20,9 +20,8 @@
 -type interpreter_state() :: #interpreter{}.
 
 -type ir_calls() ::  in | out | fork.
--type ir_opcode() :: {add, r0, integer()} |
-                     {sub, r0, integer()} |
-                     {test, ir0 | r0, ir0 | r0} |
+-type ir_opcode() :: {add, ir0 | r0, integer()} |
+                     {sub, ir0 | r0, integer()} |
                      {jze, pos_integer()} |
                      {jmp, pos_integer()} |
                      {jnze, pos_integer()} |
