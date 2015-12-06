@@ -7,5 +7,6 @@
                                           r0 = 0                    :: integer(),
                                           ir0 = 0                   :: non_neg_integer(),
                                           ic = 0                    :: non_neg_integer(),
+                                          ip = 1                    :: pos_integer(),
                                           zf = 0                    :: 0 | 1
                                         }).
