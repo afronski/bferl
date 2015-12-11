@@ -2,7 +2,8 @@
 
 -include("../include/virtual_machine_definitions.hrl").
 
--export([ start_machine/1, step/1, run/1 ]).
+-export([ start_machine/1, step/1, run/1,
+          register_tape/1, register_console/1 ]).
 
 -type step_result() :: bferl_types:virtual_machine_state() | {finished, bferl_types:virtual_machine_state()}.
 
@@ -96,9 +97,21 @@ execute({jnze, N}, Machine) when N > 0 ->
     Machine#register_based_virtual_machine{ip = NewIP};
 
 execute({call, in}, Machine) ->
-    Machine;
+    Memory = Machine#register_based_virtual_machine.memory,
+    IR0 = Machine#register_based_virtual_machine.ir0,
+
+    {In, _, _} = Machine#register_based_virtual_machine.io,
+    Read = In(),
+
+    Machine#register_based_virtual_machine{memory = array:set(IR0, Read, Memory)};
 
 execute({call, out}, Machine) ->
+    IR0 = Machine#register_based_virtual_machine.ir0,
+    Value = array:get(IR0, Machine#register_based_virtual_machine.memory),
+
+    {_, Out, _} = Machine#register_based_virtual_machine.io,
+    Out(Value),
+
     Machine;
 
 execute({call, fork}, Machine) ->
@@ -125,3 +138,21 @@ internal_run(Intermediate)        -> internal_run(step(Intermediate)).
 
 -spec run(bferl_types:virtual_machine_state()) -> bferl_types:virtual_machine_state().
 run(Machine) -> internal_run(step(Machine)).
+
+-spec register_io(fun(), fun(), fun(), bferl_types:virtual_machine_state()) -> bferl_types:virtual_machine_state().
+register_io(In, Out, NewLine, Machine) when is_function(In), is_function(Out), is_function(NewLine) ->
+    Machine#register_based_virtual_machine{io = {In, Out, NewLine}}.
+
+-spec register_tape(bferl_types:virtual_machine_state()) -> bferl_types:virtual_machine_state().
+register_tape(Machine) ->
+    register_io(fun bferl_io:get_character_from_tape/0,
+                fun bferl_io:put_character_to_tape/1,
+                fun bferl_io:new_line_on_tape/0,
+                Machine).
+
+-spec register_console(bferl_types:virtual_machine_state()) -> bferl_types:virtual_machine_state().
+register_console(Machine) ->
+    register_io(fun bferl_io:get_character_from_console/0,
+                fun bferl_io:put_character_to_console/1,
+                fun bferl_io:new_line_on_console/0,
+                Machine).

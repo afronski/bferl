@@ -31,7 +31,10 @@
           conditional_jump_when_0_should_set_up_IP_only_when_zero_flag_is_set/1,
           conditional_jump_when_not_0_should_set_up_IP_only_when_zero_flag_is_not_set/1,
           program_with_valid_jumps_should_terminate_in_finite_amount_of_steps/1,
-          program_with_valid_jumps_and_valid_pointer_movements_should_terminate_in_finite_amount_of_steps/1 ]).
+          program_with_valid_jumps_and_valid_pointer_movements_should_terminate_in_finite_amount_of_steps/1,
+          in_call_should_read_one_character_to_current_memory_cell/1,
+          out_call_should_print_one_character_from_current_memory_cell/1,
+          hello_world_program_without_optimizations_should_finish_and_output_proper_string/1 ]).
 
 all() ->
     [ virtual_machine_state_should_be_returned_after_start_up,
@@ -59,7 +62,10 @@ all() ->
       conditional_jump_when_0_should_set_up_IP_only_when_zero_flag_is_set,
       conditional_jump_when_not_0_should_set_up_IP_only_when_zero_flag_is_not_set,
       program_with_valid_jumps_should_terminate_in_finite_amount_of_steps,
-      program_with_valid_jumps_and_valid_pointer_movements_should_terminate_in_finite_amount_of_steps ].
+      program_with_valid_jumps_and_valid_pointer_movements_should_terminate_in_finite_amount_of_steps,
+      in_call_should_read_one_character_to_current_memory_cell,
+      out_call_should_print_one_character_from_current_memory_cell,
+      hello_world_program_without_optimizations_should_finish_and_output_proper_string ].
 
 virtual_machine_state_should_be_returned_after_start_up(_Context) ->
     Machine = bferl_vm_ir_executor:start_machine([]),
@@ -272,3 +278,47 @@ program_with_valid_jumps_and_valid_pointer_movements_should_terminate_in_finite_
 
     ?assertEqual(0, array:get(0, Final#register_based_virtual_machine.memory)),
     ?assertEqual(2, array:get(1, Final#register_based_virtual_machine.memory)).
+
+in_call_should_read_one_character_to_current_memory_cell(_Context) ->
+    {ok, Pid} = bferl_io:start_link(),
+    bferl_io:tape("A"),
+
+    Machine = bferl_vm_ir_executor:start_machine([ {call, in} ]),
+    MachineWithIO = bferl_vm_ir_executor:register_tape(Machine),
+
+    Final = bferl_vm_ir_executor:run(MachineWithIO),
+
+    ?assertEqual(65, array:get(0, Final#register_based_virtual_machine.memory)),
+
+    exit(Pid, normal).
+
+out_call_should_print_one_character_from_current_memory_cell(_Context) ->
+    {ok, Pid} = bferl_io:start_link(),
+    bferl_io:tape([]),
+
+    Machine = bferl_vm_ir_executor:start_machine([ {const, r0, 65}, {store, r0, ir0}, {call, out} ]),
+    MachineWithIO = bferl_vm_ir_executor:register_tape(Machine),
+
+    bferl_vm_ir_executor:run(MachineWithIO),
+    Output = bferl_io:get_output_tape(),
+
+    ?assertEqual("A", Output),
+
+    exit(Pid, normal).
+
+hello_world_program_without_optimizations_should_finish_and_output_proper_string(_Context) ->
+    {ok, Pid} = bferl_io:start_link(),
+    bferl_io:tape([]),
+
+    Opcodes = bferl_tokenizer:from_file("../../../../test/assets/hello_world.bf"),
+    {translation_suceeded, Program} = bferl_vm_ir_translator:translate(Opcodes),
+
+    Machine = bferl_vm_ir_executor:start_machine(Program),
+    MachineWithIO = bferl_vm_ir_executor:register_tape(Machine),
+
+    bferl_vm_ir_executor:run(MachineWithIO),
+    Output = bferl_io:get_output_tape(),
+
+    ?assertEqual("Hello World!\n", Output),
+
+    exit(Pid, normal).
