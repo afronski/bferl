@@ -48,6 +48,21 @@ pretty_print_when_debug(true, What) ->
 
 pretty_print_when_debug(false, _What) -> ok.
 
+parse_and_start_new_vm_thread(_DebugMode, _Type, _Flags, State, translation_error) ->
+    {{error, "You have got invalid looping constructs in your program."}, State};
+
+parse_and_start_new_vm_thread(DebugMode, Type, Flags, State, {translation_suceeded, Opcodes}) ->
+    pretty_print_when_debug(DebugMode, [ {"--VM-OPCODES-------------------------~n~n", []},
+                                         {"~p~n~n", [ Opcodes ]}
+                                       ]),
+
+    Context = #{ "Program" => Opcodes, "Type" => Type, "Flags" => Flags, "Result" => undefined },
+
+    {ok, Pid} = bferl_vm_threads_sup:start_new_thread(Context),
+    NewState = State#{ Pid => Context },
+
+    {{started, Pid, Type, Flags}, NewState}.
+
 init(empty) ->
     {ok, #{}}.
 
@@ -56,21 +71,12 @@ handle_call({start, Program, Type, Flags}, _From, State) ->
         {error, Reason} -> {reply, {error, Reason}, State};
         {ok, DebugMode} ->
             pretty_print_when_debug(DebugMode, [ {"--PROGRAM----------------------------~n~n", []},
-                                                 {"~s~n~n", [ Program ]}
-                                               ]),
+                                                 {"~s~n~n", [ Program ]} ]),
 
-            Opcodes = bferl_vm_ir_translator:translate(Program),
+            ParsingResult = bferl_vm_ir_translator:translate(Program),
+            {Reply, NewState} = parse_and_start_new_vm_thread(DebugMode, Type, Flags, State, ParsingResult),
 
-            pretty_print_when_debug(DebugMode, [ {"--VM-OPCODES-------------------------~n~n", []},
-                                                 {"~p~n~n", [ Opcodes ]}
-                                               ]),
-
-            Context = #{ "Program" => Opcodes, "Type" => Type, "Flags" => Flags, "Result" => undefined },
-
-            {ok, Pid} = bferl_vm_thread_sup:start_vm_thread(Context),
-            NewState = State#{ Pid => Context },
-
-            {reply, {started, Pid, Type, Flags}, NewState}
+            {reply, Reply, NewState}
     end;
 
 handle_call({thread_finished, Result}, From, State) ->
@@ -87,8 +93,7 @@ handle_call({get_result, For}, _From, State) ->
     Context = maps:get(For, State, undefined),
     case Context of
         undefined -> {reply, unknown_thread, State};
-        _         ->
-            {reply, {result, maps:get("Result", Context)}, State}
+        _         -> {reply, {result, maps:get("Result", Context)}, State}
     end.
 
 handle_cast(_Msg, State) ->
