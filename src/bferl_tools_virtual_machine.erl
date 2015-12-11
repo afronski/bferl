@@ -2,10 +2,7 @@
 -behavior(gen_server).
 
 -export([ start_link/0,
-          clear/0,
-          load/3,
-          start/0,
-          start/1 ]).
+          start_vm_thread/3, get_result_for_thread/1 ]).
 
 -export([ init/1,
           handle_call/3, handle_cast/2, handle_info/2,
@@ -14,46 +11,85 @@
 start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, empty, []).
 
-clear() ->
-    gen_server:call(?MODULE, clear).
+start_vm_thread(Program, Type, Flags) ->
+    gen_server:call(?MODULE, {start, Program, Type, Flags}).
 
-load(Program, Type, Flags) ->
-    gen_server:call(?MODULE, {load, Program, Type, Flags}).
+get_result_for_thread(Pid) ->
+    gen_server:call(?MODULE, {get_result, Pid}).
 
-start() ->
-    start([]).
+check_jit_and_debug(Flags, true) ->
+    case proplists:lookup(jit, Flags) of
+        {jit, _} -> {error, "You cannot pass flags `jit` and `debug` together."};
+        _        -> {ok, true}
+    end;
 
-start(Flags) ->
-    gen_server:call(?MODULE, {start, Flags}).
+check_jit_and_debug(_Flags, false) ->
+    {ok, false}.
 
-new_state() ->
-    #{"program_loaded" => false}.
+check_optimize_and_debug(Flags, true) ->
+    case proplists:lookup(optimize, Flags) of
+        {optimize, _} -> {error, "You cannot pass flags `optimize` and `debug` together."};
+        _             -> check_jit_and_debug(Flags, true)
+    end;
 
-execute_when_loaded(false, State, _StartupFlags) ->
-    {program_not_loaded, State};
+check_optimize_and_debug(Flags, false) ->
+    check_jit_and_debug(Flags, false).
 
-execute_when_loaded(true, State, StartupFlags) ->
-    Type = maps:get("type", State),
-    LoadingFlags = maps:get("loading_flags", State),
+verify_flags(Flags) ->
+    DebugMode = case proplists:lookup(debug, Flags) of
+        {debug, _} -> true;
+        _          -> false
+    end,
 
-    NewState = State#{"startup_flags" => StartupFlags},
+    check_optimize_and_debug(Flags, DebugMode).
 
-    {{started, Type, {load, LoadingFlags}, {start, StartupFlags}}, NewState}.
+pretty_print_when_debug(true, What) ->
+    lists:foreach(fun ({Line, Args}) -> io:format(Line, Args) end, What);
+
+pretty_print_when_debug(false, _What) -> ok.
 
 init(empty) ->
-    {ok, new_state()}.
+    {ok, #{}}.
 
-handle_call(clear, _From, _State) ->
-    {reply, cleared, new_state()};
+handle_call({start, Program, Type, Flags}, _From, State) ->
+    case verify_flags(Flags) of
+        {error, Reason} -> {reply, {error, Reason}, State};
+        {ok, DebugMode} ->
+            pretty_print_when_debug(DebugMode, [ {"--PROGRAM----------------------------~n~n", []},
+                                                 {"~s~n~n", [ Program ]}
+                                               ]),
 
-handle_call({load, _Program, Type, Flags}, _From, State) ->
-    NewState = State#{"type" => Type, "loading_flags" => Flags, "program_loaded" => true},
-    {reply, {loaded, Type, Flags}, NewState};
+            Opcodes = bferl_vm_ir_translator:translate(Program),
 
-handle_call({start, Flags}, _From, State) ->
-    Loaded = maps:get("program_loaded", State),
-    {Result, NewState} = execute_when_loaded(Loaded, State, Flags),
-    {reply, Result, NewState}.
+            pretty_print_when_debug(DebugMode, [ {"--VM-OPCODES-------------------------~n~n", []},
+                                                 {"~p~n~n", [ Opcodes ]}
+                                               ]),
+
+            Context = #{ "Program" => Opcodes, "Type" => Type, "Flags" => Flags, "Result" => undefined },
+
+            {ok, Pid} = bferl_vm_thread_sup:start_vm_thread(Context),
+            NewState = State#{ Pid => Context },
+
+            {reply, {started, Pid, Type, Flags}, NewState}
+    end;
+
+handle_call({thread_finished, Result}, From, State) ->
+    Context = maps:get(From, State, undefined),
+
+    case Context of
+        undefined -> {reply, unknown_thread, State};
+        _         ->
+            NewContext = Context#{ "Result" := Result },
+            {reply, acknowledged, State#{ From := NewContext }}
+    end;
+
+handle_call({get_result, For}, _From, State) ->
+    Context = maps:get(For, State, undefined),
+    case Context of
+        undefined -> {reply, unknown_thread, State};
+        _         ->
+            {reply, {result, maps:get("Result", Context)}, State}
+    end.
 
 handle_cast(_Msg, State) ->
     {noreply, State}.

@@ -73,21 +73,17 @@ compile_code(Code, debug) ->
 run_file_on_vm(Filename) ->
     Program = bferl_tokenizer:from_file(Filename),
     Type = detect_type(Filename),
-    bferl_tools_virtual_machine:load(Program, Type, [optimize, jit]),
-    bferl_tools_virtual_machine:start().
+    bferl_tools_virtual_machine:start_vm_thread(Program, Type, [optimize, jit]).
 
 run_code_on_vm(Code) ->
     Program = bferl_tokenizer:from_string(Code),
-    bferl_tools_virtual_machine:load(Program, ?HUMAN_NAME_BF, [optimize, jit]),
-    bferl_tools_virtual_machine:start().
+    bferl_tools_virtual_machine:start_vm_thread(Program, ?HUMAN_NAME_BF, [optimize, jit]).
 
 run_file_on_vm(Filename, debug) ->
     Program = bferl_tokenizer:from_file(Filename),
     Type = detect_type(Filename),
-    bferl_tools_virtual_machine:load(Program, Type, [debug]),
-    bferl_tools_virtual_machine:start([interactive]).
+    bferl_tools_virtual_machine:start_vm_thread(Program, Type, [debug, interactive]).
 
 run_code_on_vm(Code, debug) ->
     Program = bferl_tokenizer:from_string(Code),
-    bferl_tools_virtual_machine:load(Program, ?HUMAN_NAME_BF, [debug]),
-    bferl_tools_virtual_machine:start([interactive]).
+    bferl_tools_virtual_machine:start_vm_thread(Program, ?HUMAN_NAME_BF, [interactive, debug]).
