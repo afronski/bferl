@@ -26,6 +26,7 @@
           zero_flag_should_not_be_set_when_value_loaded_to_r0_is_not_equal_to_zero/1,
           storing_should_save_provided_value_from_register_to_corresponding_memory_address/1,
           constants_should_be_loaded_to_both_registers_with_one_instruction/1,
+          after_loading_constant_to_R0_zero_flag_should_be_set_apropriately/1,
           unconditional_jump_should_set_up_IP_always/1,
           conditional_jump_when_0_should_set_up_IP_only_when_zero_flag_is_set/1,
           conditional_jump_when_not_0_should_set_up_IP_only_when_zero_flag_is_not_set/1,
@@ -53,6 +54,7 @@ all() ->
       zero_flag_should_not_be_set_when_value_loaded_to_r0_is_not_equal_to_zero,
       storing_should_save_provided_value_from_register_to_corresponding_memory_address,
       constants_should_be_loaded_to_both_registers_with_one_instruction,
+      after_loading_constant_to_R0_zero_flag_should_be_set_apropriately,
       unconditional_jump_should_set_up_IP_always,
       conditional_jump_when_0_should_set_up_IP_only_when_zero_flag_is_set,
       conditional_jump_when_not_0_should_set_up_IP_only_when_zero_flag_is_not_set,
@@ -196,6 +198,17 @@ constants_should_be_loaded_to_both_registers_with_one_instruction(_Context) ->
 
     ?assertEqual(6, Final#register_based_virtual_machine.ir0),
     ?assertEqual(10, Final#register_based_virtual_machine.r0).
+
+after_loading_constant_to_R0_zero_flag_should_be_set_apropriately(_Context) ->
+    MachineFor0 = bferl_vm_ir_executor:start_machine([ {const, r0, 0} ]),
+    FinalFor0 = bferl_vm_ir_executor:run(MachineFor0),
+
+    ?assertEqual(1, FinalFor0#register_based_virtual_machine.zf),
+
+    MachineFor1 = bferl_vm_ir_executor:start_machine([ {const, r0, 1} ]),
+    FinalFor1 = bferl_vm_ir_executor:run(MachineFor1),
+
+    ?assertEqual(0, FinalFor1#register_based_virtual_machine.zf).
 
 unconditional_jump_should_set_up_IP_always(_Context) ->
     MachineFor0 = bferl_vm_ir_executor:start_machine([ {load, ir0, r0}, {jmp, 100} ]),

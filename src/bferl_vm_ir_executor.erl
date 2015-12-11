@@ -67,7 +67,12 @@ execute({const, ir0, N}, Machine) when N > 0 ->
     Machine#register_based_virtual_machine{ir0 = N};
 
 execute({const, r0, N}, Machine) when is_integer(N) ->
-    Machine#register_based_virtual_machine{r0 = N};
+    NewZF = case N of
+        0 -> 1;
+        _ -> 0
+    end,
+
+    Machine#register_based_virtual_machine{r0 = N, zf = NewZF};
 
 execute({jmp, N}, Machine) when N > 0 ->
     NewIP = N - 1,
