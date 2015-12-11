@@ -12,7 +12,7 @@
     - [x] Preparing main logic of execution.
     - [x] Implementation of basic opcodes (all besides loops and calls).
     - [x] Implementation for looping constructs.
-    - [ ] Implementation for call constructs.
+    - [x] Implementation for call constructs.
   - [ ] Introducing concept of stages in the VM tool.
   - [ ] *Heuristic* optimizations.
     - [x] Building up jump table first.
