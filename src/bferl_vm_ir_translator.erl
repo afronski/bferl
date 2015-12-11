@@ -51,8 +51,8 @@ load_and_store(Opcode) ->
 to_opcode("+") -> load_and_store({add, r0, 1});
 to_opcode("-") -> load_and_store({sub, r0, 1});
 
-to_opcode("<") -> [ {add, ir0, 1} ];
-to_opcode(">") -> [ {sub, ir0, 1} ];
+to_opcode(">") -> [ {add, ir0, 1} ];
+to_opcode("<") -> [ {sub, ir0, 1} ];
 
 to_opcode(",") -> [ {call, in} ];
 to_opcode(".") -> [ {call, out} ];

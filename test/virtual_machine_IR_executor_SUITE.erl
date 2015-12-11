@@ -25,7 +25,12 @@
           zero_flag_should_be_set_when_value_loaded_to_r0_is_equal_to_zero/1,
           zero_flag_should_not_be_set_when_value_loaded_to_r0_is_not_equal_to_zero/1,
           storing_should_save_provided_value_from_register_to_corresponding_memory_address/1,
-          constants_should_be_loaded_to_both_registers_with_one_instruction/1 ]).
+          constants_should_be_loaded_to_both_registers_with_one_instruction/1,
+          unconditional_jump_should_set_up_IP_always/1,
+          conditional_jump_when_0_should_set_up_IP_only_when_zero_flag_is_set/1,
+          conditional_jump_when_not_0_should_set_up_IP_only_when_zero_flag_is_not_set/1,
+          program_with_valid_jumps_should_terminate_in_finite_amount_of_steps/1,
+          program_with_valid_jumps_and_valid_pointer_movements_should_terminate_in_finite_amount_of_steps/1 ]).
 
 all() ->
     [ virtual_machine_state_should_be_returned_after_start_up,
@@ -47,7 +52,12 @@ all() ->
       zero_flag_should_be_set_when_value_loaded_to_r0_is_equal_to_zero,
       zero_flag_should_not_be_set_when_value_loaded_to_r0_is_not_equal_to_zero,
       storing_should_save_provided_value_from_register_to_corresponding_memory_address,
-      constants_should_be_loaded_to_both_registers_with_one_instruction ].
+      constants_should_be_loaded_to_both_registers_with_one_instruction,
+      unconditional_jump_should_set_up_IP_always,
+      conditional_jump_when_0_should_set_up_IP_only_when_zero_flag_is_set,
+      conditional_jump_when_not_0_should_set_up_IP_only_when_zero_flag_is_not_set,
+      program_with_valid_jumps_should_terminate_in_finite_amount_of_steps,
+      program_with_valid_jumps_and_valid_pointer_movements_should_terminate_in_finite_amount_of_steps ].
 
 virtual_machine_state_should_be_returned_after_start_up(_Context) ->
     Machine = bferl_vm_ir_executor:start_machine([]),
@@ -186,3 +196,66 @@ constants_should_be_loaded_to_both_registers_with_one_instruction(_Context) ->
 
     ?assertEqual(6, Final#register_based_virtual_machine.ir0),
     ?assertEqual(10, Final#register_based_virtual_machine.r0).
+
+unconditional_jump_should_set_up_IP_always(_Context) ->
+    MachineFor0 = bferl_vm_ir_executor:start_machine([ {load, ir0, r0}, {jmp, 100} ]),
+    FinalFor0 = bferl_vm_ir_executor:run(MachineFor0),
+
+    ?assertEqual(100, FinalFor0#register_based_virtual_machine.ip),
+
+    MachineFor1 = bferl_vm_ir_executor:start_machine([ {load, ir0, r0}, {jmp, 120} ]),
+    MemoryFor1 = array:set(0, 1, MachineFor1#register_based_virtual_machine.memory),
+    MachineWithMemoryUpdateFor1 = MachineFor1#register_based_virtual_machine{memory = MemoryFor1},
+
+    FinalFor1 = bferl_vm_ir_executor:run(MachineWithMemoryUpdateFor1),
+
+    ?assertEqual(120, FinalFor1#register_based_virtual_machine.ip).
+
+conditional_jump_when_0_should_set_up_IP_only_when_zero_flag_is_set(_Context) ->
+    MachineFor0 = bferl_vm_ir_executor:start_machine([ {load, ir0, r0}, {jze, 100} ]),
+    FinalFor0 = bferl_vm_ir_executor:run(MachineFor0),
+
+    ?assertEqual(100, FinalFor0#register_based_virtual_machine.ip),
+
+    MachineFor1 = bferl_vm_ir_executor:start_machine([ {load, ir0, r0}, {jze, 120} ]),
+    MemoryFor1 = array:set(0, 1, MachineFor1#register_based_virtual_machine.memory),
+    MachineWithMemoryUpdateFor1 = MachineFor1#register_based_virtual_machine{memory = MemoryFor1},
+
+    FinalFor1 = bferl_vm_ir_executor:run(MachineWithMemoryUpdateFor1),
+
+    ?assertEqual(3, FinalFor1#register_based_virtual_machine.ip).
+
+conditional_jump_when_not_0_should_set_up_IP_only_when_zero_flag_is_not_set(_Context) ->
+    MachineFor0 = bferl_vm_ir_executor:start_machine([ {load, ir0, r0}, {jnze, 100} ]),
+    FinalFor0 = bferl_vm_ir_executor:run(MachineFor0),
+
+    ?assertEqual(3, FinalFor0#register_based_virtual_machine.ip),
+
+    MachineFor1 = bferl_vm_ir_executor:start_machine([ {load, ir0, r0}, {jnze, 120} ]),
+    MemoryFor1 = array:set(0, 1, MachineFor1#register_based_virtual_machine.memory),
+    MachineWithMemoryUpdateFor1 = MachineFor1#register_based_virtual_machine{memory = MemoryFor1},
+
+    FinalFor1 = bferl_vm_ir_executor:run(MachineWithMemoryUpdateFor1),
+
+    ?assertEqual(120, FinalFor1#register_based_virtual_machine.ip).
+
+program_with_valid_jumps_should_terminate_in_finite_amount_of_steps(_Context) ->
+    {translation_suceeded, Program} = bferl_vm_ir_translator:translate([ "+", "+", "[", "-", "]" ]),
+
+    Machine = bferl_vm_ir_executor:start_machine(Program),
+    Final = bferl_vm_ir_executor:run(Machine),
+
+    %% IC = 2x3 '+', 2x6 '[-]', 1x for last jump, 1x for last pass.
+    ?assertEqual(6 + 12 + 1 + 1, Final#register_based_virtual_machine.ic).
+
+program_with_valid_jumps_and_valid_pointer_movements_should_terminate_in_finite_amount_of_steps(_Context) ->
+    {translation_suceeded, Program} = bferl_vm_ir_translator:translate([ "+", "+", "[", ">", "+", "<", "-", "]" ]),
+
+    Machine = bferl_vm_ir_executor:start_machine(Program),
+    Final = bferl_vm_ir_executor:run(Machine),
+
+    %% IC = 2x3 '+', 2x11 '[>+<-]', 1x for last jump, 1x for last pass.
+    ?assertEqual(6 + 22 + 1 + 1, Final#register_based_virtual_machine.ic),
+
+    ?assertEqual(0, array:get(0, Final#register_based_virtual_machine.memory)),
+    ?assertEqual(2, array:get(1, Final#register_based_virtual_machine.memory)).

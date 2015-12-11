@@ -24,8 +24,8 @@ individual_opcodes_should_be_translated_properly(_Context) ->
     ?assertEqual({translation_suceeded, [ {load, ir0, r0}, {sub, r0, 1}, {store, r0, ir0} ]},
                  bferl_vm_ir_translator:translate(["-"])),
 
-    ?assertEqual({translation_suceeded, [ {add, ir0, 1} ]}, bferl_vm_ir_translator:translate(["<"])),
-    ?assertEqual({translation_suceeded, [ {sub, ir0, 1} ]}, bferl_vm_ir_translator:translate([">"])),
+    ?assertEqual({translation_suceeded, [ {add, ir0, 1} ]}, bferl_vm_ir_translator:translate([">"])),
+    ?assertEqual({translation_suceeded, [ {sub, ir0, 1} ]}, bferl_vm_ir_translator:translate(["<"])),
 
     ?assertEqual({translation_suceeded, [ {call, in} ]}, bferl_vm_ir_translator:translate([","])),
     ?assertEqual({translation_suceeded, [ {call, out} ]}, bferl_vm_ir_translator:translate(["."])),

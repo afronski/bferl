@@ -67,7 +67,37 @@ execute({const, ir0, N}, Machine) when N > 0 ->
     Machine#register_based_virtual_machine{ir0 = N};
 
 execute({const, r0, N}, Machine) when is_integer(N) ->
-    Machine#register_based_virtual_machine{r0 = N}.
+    Machine#register_based_virtual_machine{r0 = N};
+
+execute({jmp, N}, Machine) when N > 0 ->
+    NewIP = N - 1,
+
+    Machine#register_based_virtual_machine{ip = NewIP};
+
+execute({jze, N}, Machine) when N > 0 ->
+    NewIP = case Machine#register_based_virtual_machine.zf of
+        1 -> N - 1;
+        _ -> Machine#register_based_virtual_machine.ip
+    end,
+
+    Machine#register_based_virtual_machine{ip = NewIP};
+
+execute({jnze, N}, Machine) when N > 0 ->
+    NewIP = case Machine#register_based_virtual_machine.zf of
+        0 -> N - 1;
+        _ -> Machine#register_based_virtual_machine.ip
+    end,
+
+    Machine#register_based_virtual_machine{ip = NewIP};
+
+execute({call, in}, Machine) ->
+    Machine;
+
+execute({call, out}, Machine) ->
+    Machine;
+
+execute({call, fork}, Machine) ->
+    Machine.
 
 -spec step(bferl_types:virtual_machine_state()) -> step_result().
 step(Step) when Step#register_based_virtual_machine.ip > length(Step#register_based_virtual_machine.ir_code) ->
@@ -75,13 +105,14 @@ step(Step) when Step#register_based_virtual_machine.ip > length(Step#register_ba
 
 step(Machine) ->
     IP = Machine#register_based_virtual_machine.ip,
-    IC = Machine#register_based_virtual_machine.ic,
-
     Instruction = lists:nth(IP, Machine#register_based_virtual_machine.ir_code),
 
     Modified = execute(Instruction, Machine),
 
-    Modified#register_based_virtual_machine{ip = IP + 1, ic = IC + 1}.
+    NewIP = Modified#register_based_virtual_machine.ip,
+    IC = Modified#register_based_virtual_machine.ic,
+
+    Modified#register_based_virtual_machine{ip = NewIP + 1, ic = IC + 1}.
 
 -spec internal_run(step_result()) -> bferl_types:virtual_machine_state().
 internal_run({finished, Result})  -> Result;
