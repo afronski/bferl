@@ -34,6 +34,7 @@
           program_with_valid_jumps_and_valid_pointer_movements_should_terminate_in_finite_amount_of_steps/1,
           in_call_should_read_one_character_to_current_memory_cell/1,
           out_call_should_print_one_character_from_current_memory_cell/1,
+          in_and_out_calls_should_be_able_to_share_state_through_memory/1,
           hello_world_program_without_optimizations_should_finish_and_output_proper_string/1 ]).
 
 all() ->
@@ -65,6 +66,7 @@ all() ->
       program_with_valid_jumps_and_valid_pointer_movements_should_terminate_in_finite_amount_of_steps,
       in_call_should_read_one_character_to_current_memory_cell,
       out_call_should_print_one_character_from_current_memory_cell,
+      in_and_out_calls_should_be_able_to_share_state_through_memory,
       hello_world_program_without_optimizations_should_finish_and_output_proper_string ].
 
 virtual_machine_state_should_be_returned_after_start_up(_Context) ->
@@ -303,6 +305,23 @@ out_call_should_print_one_character_from_current_memory_cell(_Context) ->
     Output = bferl_io:get_output_tape(),
 
     ?assertEqual("A", Output),
+
+    exit(Pid, normal).
+
+in_and_out_calls_should_be_able_to_share_state_through_memory(_Context) ->
+    {ok, Pid} = bferl_io:start_link(),
+    bferl_io:tape("A"),
+
+    Machine = bferl_vm_ir_executor:start_machine([ {call, in},
+                                                   {load, ir0, r0}, {add, r0, 1}, {store, r0, ir0},
+                                                   {call, out} ]),
+
+    MachineWithIO = bferl_vm_ir_executor:register_tape(Machine),
+
+    bferl_vm_ir_executor:run(MachineWithIO),
+    Output = bferl_io:get_output_tape(),
+
+    ?assertEqual("B", Output),
 
     exit(Pid, normal).
 
