@@ -56,7 +56,7 @@ parse_and_start_new_vm_thread(DebugMode, Type, Flags, State, {translation_suceed
                                          {"~p~n~n", [ Opcodes ]}
                                        ]),
 
-    Context = #{ "Program" => Opcodes, "Type" => Type, "Flags" => Flags, "Result" => undefined },
+    Context = #{ "Program" => Opcodes, "Type" => Type, "Flags" => Flags },
 
     {ok, Pid} = bferl_vm_threads_sup:start_new_thread(Context),
     NewState = State#{ Pid => Context },
@@ -64,7 +64,7 @@ parse_and_start_new_vm_thread(DebugMode, Type, Flags, State, {translation_suceed
     {{started, Pid, Type, Flags}, NewState}.
 
 init(empty) ->
-    {ok, #{}}.
+    {ok, #{ "Results" => #{} }}.
 
 handle_call({start, Program, Type, Flags}, _From, State) ->
     case verify_flags(Flags) of
@@ -79,21 +79,19 @@ handle_call({start, Program, Type, Flags}, _From, State) ->
             {reply, Reply, NewState}
     end;
 
-handle_call({thread_finished, Result}, From, State) ->
-    Context = maps:get(From, State, undefined),
+handle_call({thread_finished, Result}, {From, _Tag}, State) ->
+    Results = maps:get("Results", State),
+    NewResults = Results#{ From => Result },
 
-    case Context of
-        undefined -> {reply, unknown_thread, State};
-        _         ->
-            NewContext = Context#{ "Result" := Result },
-            {reply, acknowledged, State#{ From := NewContext }}
-    end;
+    {reply, acknowledged, State#{ "Results" := NewResults }};
 
 handle_call({get_result, For}, _From, State) ->
-    Context = maps:get(For, State, undefined),
-    case Context of
+    Results = maps:get("Results", State),
+    Result = maps:get(For, Results, undefined),
+
+    case Result of
         undefined -> {reply, unknown_thread, State};
-        _         -> {reply, {result, maps:get("Result", Context)}, State}
+        _         -> {reply, {result, Result}, State}
     end.
 
 handle_cast(_Msg, State) ->
