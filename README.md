@@ -54,3 +54,13 @@ Interested in more? Dive into one of those pages:
 - [REPL](/docs/REPL.md) - Description of *REPL* and *Interpreter* subsystems.
 - [Compiler](/docs/Compiler.md) - Description of the *Compiler* subsystem (compilation to *Core Erlang* representation).
 - [Virtual Machine](/docs/VirtualMachine.md) - Description of the *Virtual Machine* subsystem.
+
+## Improvements
+
+- Future improvements:
+  - [ ] *REPL* and *Interpreter* - Detecting infinite loop based on *IC* observation (increasing trend).
+  - [ ] *Compiler* - Safe pointers operations in `debug` mode.
+  - [ ] *Compiler* - Dump pretty printed *Core Erlang* to a file.
+  - [ ] *Compiler* - Additional stage for optimizations.
+    - [ ] Removing unused code (scan generated code and remove implementation of unused instructions).
+    - [ ] Rolling up increments, decrements and pointer movements.

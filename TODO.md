@@ -14,7 +14,7 @@
     - [x] Implementation for looping constructs.
     - [x] Implementation for call constructs.
   - [ ] Introducing concept of stages in the VM tool.
-  - [ ] *Heuristic* optimizations.
+  - [ ] New stage with *heuristic* optimizations.
     - [x] Building up jump table first.
     - [ ] Rolling up increments / decrements.
     - [ ] Rolling up pointer movements.
@@ -36,13 +36,3 @@
   - [ ] Example session
 - [ ] *Brainfork* internals.
   - [ ] Example session
-
-## Improvements
-
-- [ ] Improvements:
-  - [ ] *REPL* and *Interpreter* - Detecting infinite loop based on *IC* observation.
-  - [ ] *Compiler* - Safe pointers operations in `debug` mode.
-  - [ ] *Compiler* - Pretty print *Core Erlang* to file.
-  - [ ] *Compiler* - Optimization stage.
-    - [ ] Removing unused code (based on used instructions).
-    - [ ] Rolling up increments/decrements, pointer movements.
