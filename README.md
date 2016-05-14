@@ -29,6 +29,7 @@ Supported and tested on:
 - *Erlang 17.5*
 - *Erlang 18.0*
 - *Erlang 18.1*
+- *Erlang 19.0*
 
 ## Quick Example
 
