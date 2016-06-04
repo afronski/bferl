@@ -62,6 +62,6 @@ Interested in more? Dive into one of those pages:
   - [ ] *REPL* and *Interpreter* - Detecting infinite loop based on *IC* observation (increasing trend).
   - [ ] *Compiler* - Safe pointers operations in `debug` mode.
   - [ ] *Compiler* - Dump pretty printed *Core Erlang* to a file.
-  - [ ] *Compiler* - Additional stage for optimizations.
+  - [ ] *Compiler* - Additional stage for various optimizations.
     - [ ] Removing unused code (scan generated code and remove implementation of unused instructions).
     - [ ] Rolling up increments, decrements and pointer movements.
