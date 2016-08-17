@@ -59,7 +59,7 @@ Interested in more? Dive into one of those pages:
 
 - Further improvements:
   - [ ] *REPL* and *Interpreter* - Detecting infinite loop based on *IC* observation (increasing trend).
-  - [ ] *Compiler* - Safe pointers operations in `debug` mode.
+  - [ ] *Compiler* - Safe pointer operations in `debug` mode.
   - [ ] *Compiler* - Dump pretty printed *Core Erlang* to a file.
   - [ ] *Compiler* - Additional stage for various optimizations.
     - [ ] Removing unused code (scan generated code and remove implementation of unused instructions).
