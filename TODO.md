@@ -8,7 +8,10 @@
     - [ ] Rolling up increments / decrements.
     - [ ] Rolling up pointer movements.
     - [ ] Replacing reading from input with constant loading when tape provided.
-    - [ ] Using `jnze` instead of plain `jmp` in optimization stage.
+    - [ ] Using `jnze` in `jit` optimization stage instead of plain `jmp` and `jze`.
+      - It has to remove `jze`, insert `jnze` with the same index and rewrite
+        jump table prepared at the beginning. It should optimize it after
+        several rounds (e.g. at least 5 iterations).
 
 ## Next phase - *Brainfork*
 
