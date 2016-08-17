@@ -56,7 +56,14 @@ parse_and_start_new_vm_thread(DebugMode, Type, Flags, State, {translation_suceed
                                          {"~p~n~n", [ Opcodes ]}
                                        ]),
 
-    Context = #{ "Program" => Opcodes, "Type" => Type, "Flags" => Flags },
+    Tape = proplists:get_value(tape, Flags, not_attached),
+    ClearedFlags = proplists:delete(tape, Flags),
+
+    pretty_print_when_debug(DebugMode, [ {"--TAPE-------------------------------~n~n", []},
+                                         {"~p~n~n", [ Tape ]}
+                                       ]),
+
+    Context = #{ "Program" => Opcodes, "Type" => Type, "Flags" => ClearedFlags, "Tape" => Tape },
 
     {ok, Pid} = bferl_vm_threads_sup:start_new_thread(Context),
     NewState = State#{ Pid => Context },
@@ -82,6 +89,17 @@ handle_call({start, Program, Type, Flags}, _From, State) ->
 handle_call({thread_finished, Result}, {From, _Tag}, State) ->
     Results = maps:get("Results", State),
     NewResults = Results#{ From => Result },
+
+    Context = maps:get(From, State),
+
+    case maps:get("Tape", Context) of
+        not_attached ->
+            bferl_io:new_line_on_console();
+
+        _ ->
+            OutputTape = bferl_io:get_output_tape(),
+            io:format("~s~n", [ OutputTape ])
+    end,
 
     {reply, acknowledged, State#{ "Results" := NewResults }};
 

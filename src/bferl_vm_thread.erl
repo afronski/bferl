@@ -37,11 +37,16 @@ init([ Context ]) ->
 
     Machine = bferl_vm_ir_executor:start_machine(Program),
 
-    % TODO: Detect and attach tape when needed.
+    {MachineWithIO, Timeout} = case maps:get("Tape", Context) of
+        not_attached ->
+            {bferl_vm_ir_executor:register_console(Machine), 10};
 
-    MachineWithIO = bferl_vm_ir_executor:register_console(Machine),
+        Tape ->
+            bferl_io:tape(Tape),
+            {bferl_vm_ir_executor:register_tape(Machine), 0}
+    end,
 
-    {ok, State#{ "Context" => Context, "Machine" => MachineWithIO }, 0}.
+    {ok, State#{ "Context" => Context, "Machine" => MachineWithIO }, Timeout}.
 
 handle_call(_Message, _From, State) ->
     {reply, ok, State}.

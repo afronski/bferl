@@ -131,6 +131,11 @@ You can run code on it, with these commands:
     - Add `debug` atom to run it with special annotations, e.g.:
       - `bferl_app:run_code_on_vm("[-]", debug).`
       - `bferl_app:run_file_on_vm("./hello_world.bf", debug).`
+  - Both methods have ability to run programs with attached tape.
+    - Add string with tape content as a second argument, e.g.:
+      - `bferl_app:run_code_on_vm(",+.", "A").`
+      - `bferl_app:run_file_on_vm("./hello_world.bf", "A").`
+    - You can combine that invocations with passing as a third argument `debug` atom.
   - If you would like to run a *Brainfork* code, you can do it only by delivering a file with an extension `.bfo`.
 
 ### I/O
