@@ -27,8 +27,7 @@ But each of them is an ideal candidate to learn how to write by yourself an *int
 Supported and tested on:
 
 - *Erlang 17.5*
-- *Erlang 18.0*
-- *Erlang 18.1*
+- *Erlang 18.0*, *18.1*, *18.2*, *18.2.1* and *18.3*
 - *Erlang 19.0*
 
 ## Quick Example
