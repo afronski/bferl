@@ -2,7 +2,8 @@
 -behavior(gen_server).
 
 -export([ start_link/0,
-          start_vm_thread/3, get_result_for_thread/1 ]).
+          start_vm_thread/3, get_result_for_thread/1,
+          step/1 ]).
 
 -export([ init/1,
           handle_call/3, handle_cast/2, handle_info/2,
@@ -16,6 +17,9 @@ start_vm_thread(Program, Type, Flags) ->
 
 get_result_for_thread(Pid) ->
     gen_server:call(?MODULE, {get_result, Pid}).
+
+step(Pid) ->
+    gen_server:call(?MODULE, {step, Pid}).
 
 check_jit_and_debug(Flags, true) ->
     case proplists:lookup(jit, Flags) of
@@ -56,7 +60,12 @@ parse_and_start_new_vm_thread(DebugMode, Type, Flags, State, {translation_suceed
                                          {"~p~n~n", [ Opcodes ]}
                                        ]),
 
-    Tape = proplists:get_value(tape, Flags, not_attached),
+    TapeState = proplists:get_value(tape, Flags, not_attached),
+    Tape = case TapeState of
+        not_attached -> "[No tape attached]";
+        Value        -> Value
+    end,
+
     ClearedFlags = proplists:delete(tape, Flags),
 
     pretty_print_when_debug(DebugMode, [ {"--TAPE-------------------------------~n~n", []},
@@ -86,23 +95,6 @@ handle_call({start, Program, Type, Flags}, _From, State) ->
             {reply, Reply, NewState}
     end;
 
-handle_call({thread_finished, Result}, {From, _Tag}, State) ->
-    Results = maps:get("Results", State),
-    NewResults = Results#{ From => Result },
-
-    Context = maps:get(From, State),
-
-    case maps:get("Tape", Context) of
-        not_attached ->
-            bferl_io:new_line_on_console();
-
-        _ ->
-            OutputTape = bferl_io:get_output_tape(),
-            io:format("~s~n", [ OutputTape ])
-    end,
-
-    {reply, acknowledged, State#{ "Results" := NewResults }};
-
 handle_call({get_result, For}, _From, State) ->
     Results = maps:get("Results", State),
     Result = maps:get(For, Results, undefined),
@@ -110,10 +102,38 @@ handle_call({get_result, For}, _From, State) ->
     case Result of
         undefined -> {reply, unknown_thread, State};
         _         -> {reply, {result, Result}, State}
-    end.
+    end;
 
-handle_cast(_Msg, State) ->
-    {noreply, State}.
+handle_call({step, For}, _From, State) ->
+    IsPresent = maps:is_key(For, State),
+
+    Status = case IsPresent of
+        false -> unknown_thread;
+        _     -> gen_server:call(For, step)
+    end,
+
+    {reply, Status, State}.
+
+handle_cast({thread_finished, From, Result}, State) ->
+    Results = maps:get("Results", State),
+
+    ModifiedResults = case maps:is_key(From, Results) of
+        true  -> Results;
+        false ->
+            NewResults = Results#{ From => Result },
+            Context = maps:get(From, State),
+
+            case maps:get("Tape", Context) of
+                not_attached -> ok;
+                _            ->
+                    OutputTape = bferl_io:get_output_tape(),
+                    io:format("~s~n", [ OutputTape ])
+            end,
+
+            NewResults
+    end,
+
+    {noreply, State#{ "Results" := ModifiedResults }}.
 
 handle_info(_Info, State) ->
     {noreply, State}.

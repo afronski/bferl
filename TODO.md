@@ -3,6 +3,8 @@
 ## Next phase - Virtual Machine
 
 - [ ] *Virtual Machine* facility.
+  - [ ] `gen_server:call` vs. `gen_server:cast` vs. *deadlocks*.
+  - [ ] Interactive mode with *pretty printing*.
   - [ ] Introducing concept of stages in the VM tool.
   - [ ] New stage with *heuristic* optimizations.
     - [ ] Rolling up increments / decrements.
