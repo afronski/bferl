@@ -7,7 +7,7 @@
 
 -spec from_string(bferl_types:program()) -> bferl_types:instructions().
 from_string(Input) when is_list(Input) ->
-    from_string(Input, ?BRAINFUCK).
+    from_string(Input, ?BRAINFORK).
 
 -spec from_string(bferl_types:program(), bferl_types:tokens()) -> bferl_types:instructions().
 from_string(Input, Tokens) when is_list(Input) ->
