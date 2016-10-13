@@ -2,7 +2,9 @@
 -behavior(gen_server).
 
 -export([ start_link/0,
-          start_vm_thread/3, get_result_for_thread/1,
+          start_vm_thread/3,
+          run_program/1,
+          get_result_for_thread/1,
           step/1 ]).
 
 -export([ init/1,
@@ -13,7 +15,11 @@ start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, empty, []).
 
 start_vm_thread(Program, Type, Flags) ->
-    gen_server:call(?MODULE, {start, Program, Type, Flags}).
+    {started, Pid, _, _} = gen_server:call(?MODULE, {prepare, Program, Type, Flags}),
+    {ok, Pid}.
+
+run_program(Pid) ->
+    gen_server:call(?MODULE, {start, Pid}).
 
 get_result_for_thread(Pid) ->
     gen_server:call(?MODULE, {get_result, Pid}).
@@ -72,17 +78,32 @@ parse_and_start_new_vm_thread(DebugMode, Type, Flags, State, {translation_suceed
                                          {"~p~n~n", [ Tape ]}
                                        ]),
 
-    Context = #{ "Program" => Opcodes, "Type" => Type, "Flags" => ClearedFlags, "Tape" => Tape },
+    Context = #{ "Program" => Opcodes, "Type" => Type, "Flags" => ClearedFlags, "Tape" => TapeState },
 
     {ok, Pid} = bferl_vm_threads_sup:start_new_thread(Context),
     NewState = State#{ Pid => Context },
 
     {{started, Pid, Type, Flags}, NewState}.
 
+stepping(For, State) ->
+    IsPresent = maps:is_key(For, State),
+
+    case IsPresent of
+        false -> unknown_thread;
+        _     -> gen_server:call(For, step)
+    end.
+
+forever_stepping(For, State) ->
+    case stepping(For, State) of
+        unknown_thread      -> finished;
+        finished            -> finished;
+        running             -> forever_stepping(For, State)
+    end.
+
 init(empty) ->
     {ok, #{ "Results" => #{} }}.
 
-handle_call({start, Program, Type, Flags}, _From, State) ->
+handle_call({prepare, Program, Type, Flags}, _From, State) ->
     case verify_flags(Flags) of
         {error, Reason} -> {reply, {error, Reason}, State};
         {ok, DebugMode} ->
@@ -95,6 +116,10 @@ handle_call({start, Program, Type, Flags}, _From, State) ->
             {reply, Reply, NewState}
     end;
 
+handle_call({start, For}, _From, State) ->
+    Status = forever_stepping(For, State),
+    {reply, Status, State};
+
 handle_call({get_result, For}, _From, State) ->
     Results = maps:get("Results", State),
     Result = maps:get(For, Results, undefined),
@@ -105,13 +130,7 @@ handle_call({get_result, For}, _From, State) ->
     end;
 
 handle_call({step, For}, _From, State) ->
-    IsPresent = maps:is_key(For, State),
-
-    Status = case IsPresent of
-        false -> unknown_thread;
-        _     -> gen_server:call(For, step)
-    end,
-
+    Status = stepping(For, State),
     {reply, Status, State}.
 
 handle_cast({thread_finished, From, Result}, State) ->
@@ -124,8 +143,14 @@ handle_cast({thread_finished, From, Result}, State) ->
             Context = maps:get(From, State),
 
             case maps:get("Tape", Context) of
-                not_attached -> ok;
-                _            ->
+                not_attached ->
+                    Flags = maps:get("Flags", Context),
+                    case proplists:lookup(debug, Flags) of
+                        none    -> bferl_io:new_line_on_console();
+                        _       -> ok
+                    end;
+
+                _ ->
                     OutputTape = bferl_io:get_output_tape(),
                     io:format("~s~n", [ OutputTape ])
             end,

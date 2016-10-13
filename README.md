@@ -64,3 +64,11 @@ Interested in more? Dive into one of those pages:
   - [ ] *Compiler* - Additional stage for various optimizations.
     - [ ] Removing unused code (scan generated code and remove implementation of unused instructions).
     - [ ] Rolling up increments, decrements and pointer movements.
+  - [ ] *Virtual Machine* - Additional stage for various optimizations.
+    - [ ] Rolling up increments / decrements.
+    - [ ] Rolling up pointer movements.
+    - [ ] Replacing reading from input with constant loading when tape provided.
+    - [ ] Using `jnze` in `jit` optimization stage instead of plain `jmp` and `jze`.
+      - *How*? We have to remove `jze`, insert `jnze` with the same index and
+        rewrite jump table prepared at the beginning. It should be optimized
+        after several rounds (e.g. at least 5 iterations).

@@ -72,35 +72,42 @@ compile_code(Code, debug) ->
     bferl_tools_compiler:compile_and_load(Program, ?HUMAN_NAME_BF, [debug, pretty_print]).
 
 run_file_on_vm(Filename) ->
-    Program = bferl_tokenizer:from_file(Filename),
+    Parsed = bferl_tokenizer:from_file(Filename),
     Type = detect_type(Filename),
-    bferl_tools_virtual_machine:start_vm_thread(Program, Type, [optimize, jit]).
+    bferl_tools_virtual_machine:start_vm_thread(Parsed, Type, [optimize, jit]).
 
 run_code_on_vm(Code) ->
-    Program = bferl_tokenizer:from_string(Code),
-    bferl_tools_virtual_machine:start_vm_thread(Program, ?HUMAN_NAME_BF, [optimize, jit]).
+    Parsed = bferl_tokenizer:from_string(Code),
+    {ok, Pid} = bferl_tools_virtual_machine:start_vm_thread(Parsed, ?HUMAN_NAME_BF, [optimize, jit]),
+    bferl_tools_virtual_machine:run_program(Pid).
 
 run_file_on_vm(Filename, debug) ->
-    Program = bferl_tokenizer:from_file(Filename),
+    Parsed = bferl_tokenizer:from_file(Filename),
     Type = detect_type(Filename),
-    bferl_tools_virtual_machine:start_vm_thread(Program, Type, [debug, interactive]);
+    {ok, Pid} = bferl_tools_virtual_machine:start_vm_thread(Parsed, Type, [debug, interactive]),
+    bferl_tools_virtual_machine:run_program(Pid);
 run_file_on_vm(Filename, Tape) ->
-    Program = bferl_tokenizer:from_file(Filename),
+    Parsed = bferl_tokenizer:from_file(Filename),
     Type = detect_type(Filename),
-    bferl_tools_virtual_machine:start_vm_thread(Program, Type, [optimize, jit, {tape, Tape}]).
+    {ok, Pid} = bferl_tools_virtual_machine:start_vm_thread(Parsed, Type, [optimize, jit, {tape, Tape}]),
+    bferl_tools_virtual_machine:run_program(Pid).
 
 run_code_on_vm(Code, debug) ->
-    Program = bferl_tokenizer:from_string(Code),
-    bferl_tools_virtual_machine:start_vm_thread(Program, ?HUMAN_NAME_BF, [interactive, debug]);
+    Parsed = bferl_tokenizer:from_string(Code),
+    {ok, Pid} = bferl_tools_virtual_machine:start_vm_thread(Parsed, ?HUMAN_NAME_BF, [interactive, debug]),
+    bferl_tools_virtual_machine:run_program(Pid);
 run_code_on_vm(Code, Tape) ->
-    Program = bferl_tokenizer:from_string(Code),
-    bferl_tools_virtual_machine:start_vm_thread(Program, ?HUMAN_NAME_BF, [optimize, jit, {tape, Tape}]).
+    Parsed = bferl_tokenizer:from_string(Code),
+    {ok, Pid} = bferl_tools_virtual_machine:start_vm_thread(Parsed, ?HUMAN_NAME_BF, [optimize, jit, {tape, Tape}]),
+    bferl_tools_virtual_machine:run_program(Pid).
 
 run_file_on_vm(Filename, Tape, debug) ->
-    Program = bferl_tokenizer:from_file(Filename),
+    Parsed = bferl_tokenizer:from_file(Filename),
     Type = detect_type(Filename),
-    bferl_tools_virtual_machine:start_vm_thread(Program, Type, [debug, interactive, {tape, Tape}]).
+    {ok, Pid} = bferl_tools_virtual_machine:start_vm_thread(Parsed, Type, [debug, interactive, {tape, Tape}]),
+    bferl_tools_virtual_machine:run_program(Pid).
 
 run_code_on_vm(Code, Tape, debug) ->
-    Program = bferl_tokenizer:from_string(Code),
-    bferl_tools_virtual_machine:start_vm_thread(Program, ?HUMAN_NAME_BF, [interactive, debug, {tape, Tape}]).
+    Parsed = bferl_tokenizer:from_string(Code),
+    {ok, Pid} = bferl_tools_virtual_machine:start_vm_thread(Parsed, ?HUMAN_NAME_BF, [interactive, debug, {tape, Tape}]),
+    bferl_tools_virtual_machine:run_program(Pid).

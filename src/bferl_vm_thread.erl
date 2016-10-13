@@ -36,19 +36,19 @@ init([ Context ]) ->
 
     Machine = bferl_vm_ir_executor:start_machine(Program),
 
-    {MachineWithIO, Timeout} = case maps:get("Tape", Context) of
+    MachineWithIO = case maps:get("Tape", Context) of
         not_attached ->
-            {bferl_vm_ir_executor:register_console(Machine), 10};
+            bferl_vm_ir_executor:register_console(Machine);
 
         Tape ->
             bferl_io:tape(Tape),
-            {bferl_vm_ir_executor:register_tape(Machine), 0}
+            bferl_vm_ir_executor:register_tape(Machine)
     end,
 
     NewState = State#{ "Context" => Context, "Machine" => MachineWithIO },
     pretty_print_when_interactive(NewState, MachineWithIO),
 
-    {ok, NewState, Timeout}.
+    {ok, NewState}.
 
 handle_call(step, _From, State) ->
     Machine = maps:get("Machine", State),
@@ -56,8 +56,6 @@ handle_call(step, _From, State) ->
     {Status, NewMachine} = case continue(bferl_vm_ir_executor:step(Machine)) of
         {true, Intermediate} ->
             pretty_print_when_interactive(State, Intermediate),
-            step(State),
-
             {running, Intermediate};
 
         {false, Result} ->
@@ -69,8 +67,7 @@ handle_call(step, _From, State) ->
 handle_cast(_Message, State) ->
     {noreply, State}.
 
-handle_info(timeout, State) ->
-    step(State),
+handle_info(_Message, State) ->
     {noreply, State}.
 
 terminate(_Reason, _State) ->
@@ -78,12 +75,6 @@ terminate(_Reason, _State) ->
 
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
-
-step(State) ->
-    case maps:get("Debug", State, false) of
-        true  -> ok;
-        false -> gen_server:call(self(), step)
-    end.
 
 pretty_print_when_interactive(State, _Machine) ->
     case maps:get("Interactive", State, false) of
@@ -121,7 +112,9 @@ pretty_print_when_interactive(State, _Machine) ->
             end,
 
             io:format("--MEMORY---------------------------~n", []),
+            %% TODO: Dump memory.
             io:format("--CODE--------------------[~1s~1s][~1s~1s]-~n", [DebugMode, InteractiveMode, OptMode, JitMode]),
+            %% TODO: Dump code.
             io:format("--TAPE-----------------------------~n", []),
             io:format("Input:  ~s~n", [Input]),
             io:format("Output: ~s~n", [Output]),
