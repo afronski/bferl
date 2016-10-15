@@ -1,6 +1,8 @@
 -module(bferl_vm_thread).
 -behaviour(gen_server).
 
+-include("../include/virtual_machine_definitions.hrl").
+
 -export([ start_link/1 ]).
 
 -export([ init/1,
@@ -76,6 +78,32 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
+map_opcode_to_string({add, T, V})   -> io_lib:format("add(~p, ~B)", [T, V]);
+map_opcode_to_string({sub, T, V})   -> io_lib:format("sub(~p, ~B)", [T, V]);
+
+map_opcode_to_string({jze, T})      -> io_lib:format("jze(~B)", [T]);
+map_opcode_to_string({jmp, T})      -> io_lib:format("jmp(~B)", [T]);
+map_opcode_to_string({jnze, T})     -> io_lib:format("jnze(~B)", [T]);
+
+map_opcode_to_string({const, T, V}) -> io_lib:format("const(~p, ~B)", [T, V]);
+
+map_opcode_to_string({load, _, _})  -> "load(ir0, r0)";
+map_opcode_to_string({store, _, _}) -> "store(r0, ir0)";
+
+map_opcode_to_string({call, in})    -> "call(in)";
+map_opcode_to_string({call, out})   -> "call(out)";
+map_opcode_to_string({call, fork})  -> "call(fork)".
+
+get_memory_cell(CellIndex, Machine) when CellIndex >= 0, CellIndex < ?VM_MEMORY_SIZE ->
+    array:get(CellIndex, Machine#register_based_virtual_machine.memory);
+get_memory_cell(_CellIndex, _Machine) ->
+    0.
+
+get_opcode(Index, Machine) when Index >= 1, Index =< length(Machine#register_based_virtual_machine.ir_code) ->
+    map_opcode_to_string(lists:nth(Index, Machine#register_based_virtual_machine.ir_code));
+get_opcode(_Index, _Machine) ->
+    "".
+
 pretty_print_when_interactive(State, _Machine) ->
     case maps:get("Interactive", State, false) of
         false -> ok;
@@ -111,10 +139,42 @@ pretty_print_when_interactive(State, _Machine) ->
                 false -> "-"
             end,
 
-            io:format("--MEMORY---------------------------~n", []),
-            %% TODO: Dump memory.
+            Machine = maps:get("Machine", State),
+
+            IP = Machine#register_based_virtual_machine.ip,
+            IC = Machine#register_based_virtual_machine.ic,
+
+            ZF = Machine#register_based_virtual_machine.zf,
+
+            IR0 = Machine#register_based_virtual_machine.ir0,
+            R0 = Machine#register_based_virtual_machine.r0,
+
+            MM2 = get_memory_cell(IR0 - 2, Machine),
+            MM1 = get_memory_cell(IR0 - 1, Machine),
+            M0  = get_memory_cell(IR0    , Machine),
+            MP1 = get_memory_cell(IR0 + 1, Machine),
+            MP2 = get_memory_cell(IR0 + 2, Machine),
+
+            Memory = [ MM2, MM1, M0, MP1, MP2, R0],
+
+            OpcodeM2 = get_opcode(IP - 2, Machine),
+            OpcodeM1 = get_opcode(IP - 1, Machine),
+            Opcode0  = get_opcode(IP    , Machine),
+            OpcodeP1 = get_opcode(IP + 1, Machine),
+            OpcodeP2 = get_opcode(IP + 2, Machine),
+
+            io:format("--MEMORY-FLAGS-AND-REGISTERS-------~n", []),
+            io:format(".. ~3B ~3B (~3B) ~3B ~3B ..  R0: ~3B~n", Memory),
+            io:format("..  -2  -1    0   +1  +2 .. IR0: ~3B~n", [IR0]),
+            io:format("..                           IP: ~3B~n", [IP]),
+            io:format("..                           ZF: ~3B~n", [ZF]),
+            io:format("..                           IC: ~3B~n", [IC]),
             io:format("--CODE--------------------[~1s~1s][~1s~1s]-~n", [DebugMode, InteractiveMode, OptMode, JitMode]),
-            %% TODO: Dump code.
+            io:format("   -2               ~s~n", [OpcodeM2]),
+            io:format("   -1               ~s~n", [OpcodeM1]),
+            io:format("    0 (IP: ~3B) ==> ~s~n", [IP, Opcode0]),
+            io:format("   +1               ~s~n", [OpcodeP1]),
+            io:format("   +2               ~s~n", [OpcodeP2]),
             io:format("--TAPE-----------------------------~n", []),
             io:format("Input:  ~s~n", [Input]),
             io:format("Output: ~s~n", [Output]),

@@ -26,7 +26,9 @@ From those operations, we can deduce that internally we have available following
 
 Beside those we have also *flags* and not modifiable registers:
 
-- `zf` - Zero flag, it is set when `0` value is inside `r0` register.
+- `zf` - Zero flag, it is set to `1` when `0` value is inside `r0` register. It is set after following opcodes:
+  - `{load, ir0, r0}`
+  - `{const, r0, 0}`
 - `ic` - Usual *instruction counter* (number of executed instructions), this is increased after each opcode.
 - `ip` - Usual *instruction pointer* (index of currently executed instruction), this is set by jumps.
 

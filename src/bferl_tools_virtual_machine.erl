@@ -3,8 +3,8 @@
 
 -export([ start_link/0,
           start_vm_thread/3,
-          run_program/1,
           get_result_for_thread/1,
+          run_program/1,
           step/1 ]).
 
 -export([ init/1,
@@ -18,14 +18,14 @@ start_vm_thread(Program, Type, Flags) ->
     {started, Pid, _, _} = gen_server:call(?MODULE, {prepare, Program, Type, Flags}),
     {ok, Pid}.
 
-run_program(Pid) ->
-    gen_server:call(?MODULE, {start, Pid}).
-
 get_result_for_thread(Pid) ->
     gen_server:call(?MODULE, {get_result, Pid}).
 
+run_program(Pid) ->
+    gen_server:call(?MODULE, {start, Pid}, infinity).
+
 step(Pid) ->
-    gen_server:call(?MODULE, {step, Pid}).
+    gen_server:call(?MODULE, {step, Pid}, infinity).
 
 check_jit_and_debug(Flags, true) ->
     case proplists:lookup(jit, Flags) of
@@ -90,7 +90,7 @@ stepping(For, State) ->
 
     case IsPresent of
         false -> unknown_thread;
-        _     -> gen_server:call(For, step)
+        _     -> gen_server:call(For, step, infinity)
     end.
 
 forever_stepping(For, State) ->
