@@ -64,11 +64,13 @@ Interested in more? Dive into one of those pages:
   - [ ] *Compiler* - Additional stage for various optimizations.
     - [ ] Removing unused code (scan generated code and remove implementation of unused instructions).
     - [ ] Rolling up increments, decrements and pointer movements.
-  - [ ] *Virtual Machine* - Additional stage for various optimizations.
+  - [ ] *Virtual Machine* - Additional stage for *instructions rewrite* optimizations (`optimize`).
     - [ ] Rolling up increments / decrements.
     - [ ] Rolling up pointer movements.
     - [ ] Replacing reading from input with constant loading when tape provided.
-    - [ ] Using `jnze` in `jit` optimization stage instead of plain `jmp` and `jze`.
-      - *How*? We have to remove `jze`, insert `jnze` with the same index and
-        rewrite jump table prepared at the beginning. It should be optimized
-        after several rounds (e.g. at least 5 iterations).
+  - [ ] *Virtual Machine* - Additional stage for *JIT* optimizations (`jit`).
+    - [ ] Using `jnze` instead of plain `jmp` and `jze`.
+      - [ ] *How*? We have to remove `jze`, insert `jnze` with the same index and rewrite jump table prepared at the beginning. It should be optimized after several rounds (e.g. at least 5 iterations).
+  - [ ] Adding support for `Y` instruction (*Brainfork*) - it make sense only in the *Compiler* and *Virtual Machine*.
+    - [ ] For *Virtual Machine* - fork uses new `bferl_vm_thread` process with cloned state.
+    - [ ] For *Compiler* - fork should `spawn_link` a new process with logic and its own memory.

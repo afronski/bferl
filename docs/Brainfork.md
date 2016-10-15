@@ -2,7 +2,7 @@
 
 ## Internals
 
-*TODO*
+*It is not implemented yet.*
 
 ## Support
 
@@ -10,4 +10,4 @@ This language is supported only in the *Virtual Machine* and *Compiler* and only
 
 ## Example Session
 
-*TODO*
+*It is not implemented yet.*
