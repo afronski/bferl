@@ -87,4 +87,4 @@ Inside `bferl_app` we have couple of helpers available:
 
 ## Example Session
 
-*TODO*
+[![asciicast](https://asciinema.org/a/1auxw7mo4jbeeoa861532f76i.png)](https://asciinema.org/a/1auxw7mo4jbeeoa861532f76i)
